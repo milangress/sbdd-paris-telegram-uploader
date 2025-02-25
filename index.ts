@@ -1,6 +1,7 @@
 import { Bot, session, GrammyError, HttpError } from 'grammy';
-import { Menu } from '@grammyjs/menu';
-import fs from 'fs-extra';
+import { hydrateFiles } from '@grammyjs/files';
+import type { FileFlavor } from '@grammyjs/files';
+import { mkdir } from 'node:fs/promises';
 import path from 'path';
 
 // Import configuration
@@ -12,12 +13,14 @@ import { handlePhoto, handleVideo, handleAudio, handleText } from './src/handler
 import { handleDescription, handleOrientation, handleTarotCard } from './src/handlers/conversationHandler';
 import { mainMenu, startMenu } from './src/handlers/menuHandler';
 
-// Create a bot instance
-// BOT_TOKEN is checked in config, so we can safely assert it's not undefined
-const bot = new Bot<MyContext>(BOT_TOKEN as string);
+// Create a bot instance with FileFlavor
+const bot = new Bot<FileFlavor<MyContext>>(BOT_TOKEN as string);
+
+// Use the file plugin
+bot.api.config.use(hydrateFiles(BOT_TOKEN as string));
 
 // Create a temp directory for file downloads
-fs.ensureDirSync(path.join(process.cwd(), 'temp'));
+mkdir(path.join(process.cwd(), 'temp'), { recursive: true });
 
 // Middleware to check if user is allowed (if ALLOWED_USER_IDS is not empty)
 bot.use(async (ctx, next) => {
@@ -47,12 +50,7 @@ bot.use(startMenu);
 // Command handlers
 bot.command('start', async (ctx) => {
   await ctx.reply(
-    `Welcome to the Kirby CMS Uploader Bot! 👋
-
-This bot helps you upload content to Kirby CMS.
-You can send photos, videos, audio, or text messages.
-
-What would you like to do?`,
+    'Welcome to the Kirby CMS Uploader Bot! 👋\n\nThis bot helps you upload content to Kirby CMS.',
     { reply_markup: startMenu }
   );
 });
@@ -73,22 +71,17 @@ bot.command('reset', async (ctx) => {
   ctx.session.tarotCard = undefined;
   ctx.session.targetFolder = undefined;
   
-  await ctx.reply('Session reset. You can start a new upload now.', {
-    reply_markup: { remove_keyboard: true }
-  });
+  await ctx.reply('Session reset. You can start a new upload now.');
 });
 
 bot.command('help', async (ctx) => {
   await ctx.reply(
-    `This bot helps you upload content to Kirby CMS.
-
-Available commands:
-/start - Start the bot and see the main menu
-/menu - Show the main menu
-/reset - Reset your current session
-/help - Show this help message
-
-If you encounter any issues, please contact the administrator.`
+    'This bot helps you upload content to Kirby CMS.\n\n' +
+    'Available commands:\n' +
+    '/start - Start the bot\n' +
+    '/menu - Show the main menu\n' +
+    '/reset - Reset your current session\n' +
+    '/help - Show this help message'
   );
 });
 

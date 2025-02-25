@@ -1,18 +1,15 @@
-import { config } from 'dotenv';
 import path from 'path';
-import fs from 'fs-extra';
-
-// Load environment variables from .env file
-config();
+import { mkdir } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 
 // Bot configuration
-export const BOT_TOKEN = process.env.BOT_TOKEN;
+export const BOT_TOKEN = Bun.env.BOT_TOKEN;
 if (!BOT_TOKEN) {
   throw new Error('BOT_TOKEN is not defined in .env file');
 }
 
 // Kirby CMS directory configuration
-export const KIRBY_COLLECTION_DIR = process.env.KIRBY_COLLECTION_DIR;
+export const KIRBY_COLLECTION_DIR = Bun.env.KIRBY_COLLECTION_DIR;
 if (!KIRBY_COLLECTION_DIR) {
   throw new Error('KIRBY_COLLECTION_DIR is not defined in .env file');
 }
@@ -23,10 +20,10 @@ const absoluteKirbyDir = path.isAbsolute(KIRBY_COLLECTION_DIR)
   : path.join(process.cwd(), KIRBY_COLLECTION_DIR);
 
 // Create the directory if it doesn't exist
-if (!fs.existsSync(absoluteKirbyDir)) {
+if (!existsSync(absoluteKirbyDir)) {
   console.log(`Creating Kirby collection directory: ${absoluteKirbyDir}`);
   try {
-    fs.ensureDirSync(absoluteKirbyDir);
+    mkdir(absoluteKirbyDir, { recursive: true });
   } catch (error) {
     throw new Error(`Failed to create KIRBY_COLLECTION_DIR: ${absoluteKirbyDir}. Error: ${error}`);
   }
@@ -36,8 +33,8 @@ if (!fs.existsSync(absoluteKirbyDir)) {
 export const KIRBY_COLLECTION_DIR_ABSOLUTE = absoluteKirbyDir;
 
 // Optional: Allowed user IDs
-export const ALLOWED_USER_IDS = process.env.ALLOWED_USER_IDS
-  ? process.env.ALLOWED_USER_IDS.split(',').map(id => Number(id.trim()))
+export const ALLOWED_USER_IDS = Bun.env.ALLOWED_USER_IDS
+  ? Bun.env.ALLOWED_USER_IDS.split(',').map(id => Number(id.trim()))
   : [];
 
 // Tarot cards list

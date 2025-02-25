@@ -1,11 +1,13 @@
 import type { MyContext } from '../types';
+import type { FileFlavor } from '@grammyjs/files';
+import { Keyboard } from 'grammy';
 import { ORIENTATIONS, TAROT_CARDS } from '../config';
 import { finalizeUpload } from './fileHandler';
 
 /**
  * Handles the description step of the conversation
  */
-export const handleDescription = async (ctx: MyContext): Promise<void> => {
+export const handleDescription = async (ctx: FileFlavor<MyContext>): Promise<void> => {
   if (ctx.session.step !== 'awaiting_description' || !ctx.msg?.text) {
     return;
   }
@@ -22,23 +24,21 @@ export const handleDescription = async (ctx: MyContext): Promise<void> => {
   // Move to the next step
   ctx.session.step = 'awaiting_orientation';
   
+  // Create orientation keyboard using Keyboard class
+  const keyboard = new Keyboard();
+  ORIENTATIONS.forEach(orientation => {
+    keyboard.text(orientation);
+  });
+  keyboard.resized().oneTime();
+  
   // Ask for orientation
-  await ctx.reply(
-    'Please select the orientation:',
-    {
-      reply_markup: {
-        keyboard: ORIENTATIONS.map(orientation => [{ text: orientation }]),
-        one_time_keyboard: true,
-        resize_keyboard: true
-      }
-    }
-  );
+  await ctx.reply('Please select the orientation:', { reply_markup: keyboard });
 };
 
 /**
  * Handles the orientation step of the conversation
  */
-export const handleOrientation = async (ctx: MyContext): Promise<void> => {
+export const handleOrientation = async (ctx: FileFlavor<MyContext>): Promise<void> => {
   if (ctx.session.step !== 'awaiting_orientation' || !ctx.msg?.text) {
     return;
   }
@@ -47,16 +47,14 @@ export const handleOrientation = async (ctx: MyContext): Promise<void> => {
   
   // Validate orientation
   if (!ORIENTATIONS.map(o => o.toLowerCase()).includes(orientation)) {
-    await ctx.reply(
-      'Please select a valid orientation:',
-      {
-        reply_markup: {
-          keyboard: ORIENTATIONS.map(orientation => [{ text: orientation }]),
-          one_time_keyboard: true,
-          resize_keyboard: true
-        }
-      }
-    );
+    // Create orientation keyboard using Keyboard class
+    const keyboard = new Keyboard();
+    ORIENTATIONS.forEach(orientation => {
+      keyboard.text(orientation);
+    });
+    keyboard.resized().oneTime();
+    
+    await ctx.reply('Please select a valid orientation:', { reply_markup: keyboard });
     return;
   }
 
@@ -66,30 +64,25 @@ export const handleOrientation = async (ctx: MyContext): Promise<void> => {
   // Move to the next step
   ctx.session.step = 'awaiting_tarot_card';
   
-  // Create a keyboard with tarot cards (in rows of 3)
-  const tarotKeyboard = [];
-  for (let i = 0; i < TAROT_CARDS.length; i += 3) {
-    const row = TAROT_CARDS.slice(i, i + 3).map(card => ({ text: card }));
-    tarotKeyboard.push(row);
+  // Create tarot card keyboard using Keyboard class
+  const keyboard = new Keyboard();
+  for (let i = 0; i < TAROT_CARDS.length; i++) {
+    keyboard.text(TAROT_CARDS[i]);
+    // Add a row break after every 3 cards
+    if ((i + 1) % 3 === 0 && i < TAROT_CARDS.length - 1) {
+      keyboard.row();
+    }
   }
+  keyboard.resized().oneTime();
   
   // Ask for tarot card
-  await ctx.reply(
-    'Please select a tarot card:',
-    {
-      reply_markup: {
-        keyboard: tarotKeyboard,
-        one_time_keyboard: true,
-        resize_keyboard: true
-      }
-    }
-  );
+  await ctx.reply('Please select a tarot card:', { reply_markup: keyboard });
 };
 
 /**
  * Handles the tarot card step of the conversation
  */
-export const handleTarotCard = async (ctx: MyContext): Promise<void> => {
+export const handleTarotCard = async (ctx: FileFlavor<MyContext>): Promise<void> => {
   if (ctx.session.step !== 'awaiting_tarot_card' || !ctx.msg?.text) {
     return;
   }
@@ -98,23 +91,18 @@ export const handleTarotCard = async (ctx: MyContext): Promise<void> => {
   
   // Validate tarot card
   if (!TAROT_CARDS.includes(tarotCard)) {
-    // Create a keyboard with tarot cards (in rows of 3)
-    const tarotKeyboard = [];
-    for (let i = 0; i < TAROT_CARDS.length; i += 3) {
-      const row = TAROT_CARDS.slice(i, i + 3).map(card => ({ text: card }));
-      tarotKeyboard.push(row);
-    }
-    
-    await ctx.reply(
-      'Please select a valid tarot card:',
-      {
-        reply_markup: {
-          keyboard: tarotKeyboard,
-          one_time_keyboard: true,
-          resize_keyboard: true
-        }
+    // Create tarot card keyboard using Keyboard class
+    const keyboard = new Keyboard();
+    for (let i = 0; i < TAROT_CARDS.length; i++) {
+      keyboard.text(TAROT_CARDS[i]);
+      // Add a row break after every 3 cards
+      if ((i + 1) % 3 === 0 && i < TAROT_CARDS.length - 1) {
+        keyboard.row();
       }
-    );
+    }
+    keyboard.resized().oneTime();
+    
+    await ctx.reply('Please select a valid tarot card:', { reply_markup: keyboard });
     return;
   }
 
@@ -130,10 +118,7 @@ Description: ${ctx.session.description}
 Orientation: ${ctx.session.orientation}
 Tarot Card: ${ctx.session.tarotCard}
 
-Saving to Kirby CMS...`,
-    {
-      reply_markup: { remove_keyboard: true }
-    }
+Saving to Kirby CMS...`
   );
   
   // Finalize the upload

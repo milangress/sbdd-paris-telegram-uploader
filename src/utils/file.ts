@@ -1,4 +1,4 @@
-import fs from 'fs-extra';
+import { mkdir } from 'node:fs/promises';
 import path from 'path';
 import type { KirbyNote } from '../types';
 import { KIRBY_COLLECTION_DIR_ABSOLUTE } from '../config';
@@ -14,25 +14,8 @@ export const createNewFolder = async (): Promise<string> => {
   // Use the absolute path
   const folderPath = path.join(KIRBY_COLLECTION_DIR_ABSOLUTE, folderName);
   
-  await fs.ensureDir(folderPath);
+  await mkdir(folderPath, { recursive: true });
   return folderPath;
-};
-
-/**
- * Saves a file to the specified folder
- * @param filePath Path to the source file
- * @param targetFolder Path to the target folder
- * @param fileName Name to save the file as
- * @returns The path to the saved file
- */
-export const saveFile = async (
-  filePath: string,
-  targetFolder: string,
-  fileName: string
-): Promise<string> => {
-  const targetPath = path.join(targetFolder, fileName);
-  await fs.copy(filePath, targetPath);
-  return targetPath;
 };
 
 /**
@@ -72,6 +55,6 @@ FileType: ${noteData.fileType}
 DateUploaded: ${noteData.dateUploaded}
 `.trim();
 
-  await fs.writeFile(notePath, noteContent, 'utf8');
+  await Bun.write(notePath, noteContent);
   return notePath;
 }; 
