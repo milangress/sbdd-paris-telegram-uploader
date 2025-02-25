@@ -1,6 +1,6 @@
 import type { MyContext } from '../types';
 
-export function resetSession(ctx: MyContext) {
+export async function resetSession(ctx: MyContext) {
     ctx.session.step = 'idle';
     ctx.session.fileId = undefined;
     ctx.session.fileType = undefined;
@@ -10,4 +10,5 @@ export function resetSession(ctx: MyContext) {
     ctx.session.orientation = undefined;
     ctx.session.tarotCard = undefined;
     ctx.session.targetFolder = undefined;
+    await ctx.reply('You can start a new upload now.');
 }

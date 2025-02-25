@@ -20,19 +20,12 @@ const handleMediaUpload = async (
     // Download the file directly to the target folder
     const file = await ctx.getFile();
     
-    // Extract original filename from file_path if available
-    let fileName = 'content';
-    
-    if (file.file_path) {
-      // Get the original filename from the path
-      const originalName = path.basename(file.file_path);
-      if (originalName) {
-        fileName = originalName;
-      }
-    } else {
-      // Fallback to default name with type extension
-      fileName = `content.${fileType}`;
-    }
+    // Get filename from file path or message, fallback to generic name
+    const fileName = file.file_path 
+      ? path.basename(file.file_path)
+      : (fileType !== 'photo' && ctx?.msg?.[fileType]?.file_name) 
+        ? ctx.msg[fileType].file_name
+        : `content.${fileType}`;
     
     const targetPath = path.join(targetFolder, fileName);
     
@@ -153,15 +146,12 @@ export const finalizeUpload = async (ctx: MyContext): Promise<void> => {
     
     // Notify the user
     await ctx.reply(`✅ Upload complete! Your ${ctx.session.fileType} has been saved to Kirby CMS.`);
-    
-    // Reset session
-    resetSession(ctx);
-    
+        
   } catch (error) {
     console.error('Error finalizing upload:', error);
     await ctx.reply('❌ There was an error saving your upload. Please try again.');
     
-    // Reset session on error
-    ctx.session.step = 'idle';
+  } finally {
+    await resetSession(ctx);
   }
 }; 

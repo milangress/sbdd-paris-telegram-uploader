@@ -59,9 +59,7 @@ bot.command('start', async (ctx) => {
 
 bot.command('reset', async (ctx) => {
   // Reset the session
-  resetSession(ctx);
-  
-  await ctx.reply('Session reset. You can start a new upload now.');
+  await resetSession(ctx);
 });
 
 bot.command('help', async (ctx) => {
