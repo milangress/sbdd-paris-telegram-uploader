@@ -1,5 +1,5 @@
-import { Context } from 'grammy';
-
+import { Context, type SessionFlavor } from 'grammy';
+import type { FileFlavor } from '@grammyjs/files';
 // Session data for storing user's upload progress
 export interface SessionData {
   // Current step in the upload process
@@ -20,10 +20,8 @@ export interface SessionData {
   targetFolder?: string;
 }
 
-// Extended context with session data
-export interface MyContext extends Context {
-  session: SessionData;
-}
+// Extended context with both session data and file flavor
+export type MyContext = FileFlavor<Context & SessionFlavor<SessionData>>;
 
 // Kirby note file structure
 export interface KirbyNote {

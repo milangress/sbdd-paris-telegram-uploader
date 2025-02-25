@@ -1,6 +1,5 @@
 import { Bot, session, GrammyError, HttpError } from 'grammy';
 import { hydrateFiles } from '@grammyjs/files';
-import type { FileFlavor } from '@grammyjs/files';
 import { mkdir } from 'node:fs/promises';
 import path from 'path';
 import { resetSession } from './src/utils/reset';
@@ -13,8 +12,8 @@ import type { MyContext, SessionData } from './src/types';
 import { handlePhoto, handleVideo, handleAudio, handleText } from './src/handlers/fileHandler';
 import { handleDescription, handleOrientation, handleTarotCard } from './src/handlers/conversationHandler';
 
-// Create a bot instance with FileFlavor
-const bot = new Bot<FileFlavor<MyContext>>(BOT_TOKEN as string);
+// Create a bot instance with the combined MyContext type
+const bot = new Bot<MyContext>(BOT_TOKEN as string);
 
 // Use the file plugin
 bot.api.config.use(hydrateFiles(BOT_TOKEN as string));

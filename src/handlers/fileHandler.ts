@@ -2,14 +2,14 @@ import { InputFile } from 'grammy';
 import path from 'path';
 import { mkdir } from 'node:fs/promises';
 import type { MyContext } from '../types';
-import type { FileFlavor } from '@grammyjs/files';
 import { createNewFolder, createNoteFile } from '../utils/file';
 import { resetSession } from '../utils/reset';
+
 /**
  * Shared function to handle media uploads
  */
 const handleMediaUpload = async (
-  ctx: FileFlavor<MyContext>, 
+  ctx: MyContext, 
   fileId: string, 
   fileType: 'photo' | 'video' | 'audio',
 ): Promise<void> => {
@@ -58,7 +58,7 @@ const handleMediaUpload = async (
 /**
  * Handles photo uploads
  */
-export const handlePhoto = async (ctx: FileFlavor<MyContext>): Promise<void> => {
+export const handlePhoto = async (ctx: MyContext): Promise<void> => {
   // Get the largest photo (best quality)
   const photo = ctx.msg?.photo?.slice(-1)[0];
   if (!photo) {
@@ -72,7 +72,7 @@ export const handlePhoto = async (ctx: FileFlavor<MyContext>): Promise<void> => 
 /**
  * Handles video uploads
  */
-export const handleVideo = async (ctx: FileFlavor<MyContext>): Promise<void> => {
+export const handleVideo = async (ctx: MyContext): Promise<void> => {
   
   const video = ctx.msg?.video;
   if (!video) {
@@ -86,7 +86,7 @@ export const handleVideo = async (ctx: FileFlavor<MyContext>): Promise<void> => 
 /**
  * Handles audio uploads
  */
-export const handleAudio = async (ctx: FileFlavor<MyContext>): Promise<void> => {
+export const handleAudio = async (ctx: MyContext): Promise<void> => {
   const audio = ctx.msg?.audio || ctx.msg?.voice;
   if (!audio) {
     await ctx.reply('Failed to process audio. Please try again.');
@@ -99,7 +99,7 @@ export const handleAudio = async (ctx: FileFlavor<MyContext>): Promise<void> => 
 /**
  * Handles text messages as content
  */
-export const handleText = async (ctx: FileFlavor<MyContext>): Promise<void> => {
+export const handleText = async (ctx: MyContext): Promise<void> => {
   // Only handle text as content if we're in idle state
   if (ctx.session.step !== 'idle') return;
   
@@ -133,7 +133,7 @@ export const handleText = async (ctx: FileFlavor<MyContext>): Promise<void> => {
 /**
  * Finalizes the upload process and saves metadata to Kirby
  */
-export const finalizeUpload = async (ctx: FileFlavor<MyContext>): Promise<void> => {
+export const finalizeUpload = async (ctx: MyContext): Promise<void> => {
   try {
     // Get the target folder from the session
     const targetFolder = ctx.session.targetFolder;

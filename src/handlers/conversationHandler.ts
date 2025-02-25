@@ -1,5 +1,4 @@
 import type { MyContext } from '../types';
-import type { FileFlavor } from '@grammyjs/files';
 import { Keyboard } from 'grammy';
 import { ORIENTATIONS, TAROT_CARDS } from '../config';
 import { finalizeUpload } from './fileHandler';
@@ -7,7 +6,7 @@ import { finalizeUpload } from './fileHandler';
 /**
  * Handles the description step of the conversation
  */
-export const handleDescription = async (ctx: FileFlavor<MyContext>): Promise<void> => {
+export const handleDescription = async (ctx: MyContext): Promise<void> => {
   if (ctx.session.step !== 'awaiting_description' || !ctx.msg?.text) {
     return;
   }
@@ -38,7 +37,7 @@ export const handleDescription = async (ctx: FileFlavor<MyContext>): Promise<voi
 /**
  * Handles the orientation step of the conversation
  */
-export const handleOrientation = async (ctx: FileFlavor<MyContext>): Promise<void> => {
+export const handleOrientation = async (ctx: MyContext): Promise<void> => {
   if (ctx.session.step !== 'awaiting_orientation' || !ctx.msg?.text) {
     return;
   }
@@ -82,7 +81,7 @@ export const handleOrientation = async (ctx: FileFlavor<MyContext>): Promise<voi
 /**
  * Handles the tarot card step of the conversation
  */
-export const handleTarotCard = async (ctx: FileFlavor<MyContext>): Promise<void> => {
+export const handleTarotCard = async (ctx: MyContext): Promise<void> => {
   if (ctx.session.step !== 'awaiting_tarot_card' || !ctx.msg?.text) {
     return;
   }
