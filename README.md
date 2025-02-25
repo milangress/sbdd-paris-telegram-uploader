@@ -19,23 +19,27 @@ A Telegram bot built with Bun and GrammY to simplify uploading files to a Kirby 
 ## Setup
 
 1. Clone this repository:
-   ```
+
+   ```bash
    git clone https://github.com/yourusername/sbdd-paris-telegram-uploader.git
    cd sbdd-paris-telegram-uploader
    ```
 
 2. Install dependencies:
-   ```
+
+   ```bash
    bun install
    ```
 
 3. Create a `.env` file based on the `.env.example`:
-   ```
+
+   ```bash
    cp .env.example .env
    ```
 
 4. Edit the `.env` file with your Telegram bot token and Kirby collection directory:
-   ```
+
+   ```bash
    BOT_TOKEN=your_telegram_bot_token_here
    KIRBY_COLLECTION_DIR=/path/to/your/kirby/collection/directory
    ALLOWED_USER_IDS=123456789,987654321  # Optional: restrict access to specific users
@@ -44,7 +48,8 @@ A Telegram bot built with Bun and GrammY to simplify uploading files to a Kirby 
 ## Usage
 
 1. Start the bot:
-   ```
+
+   ```bash
    bun run index.ts
    ```
 
