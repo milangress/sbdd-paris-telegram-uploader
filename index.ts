@@ -3,6 +3,7 @@ import { hydrateFiles } from '@grammyjs/files';
 import type { FileFlavor } from '@grammyjs/files';
 import { mkdir } from 'node:fs/promises';
 import path from 'path';
+import { resetSession } from './src/utils/reset';
 
 // Import configuration
 import { BOT_TOKEN, ALLOWED_USER_IDS } from './src/config';
@@ -59,15 +60,7 @@ bot.command('start', async (ctx) => {
 
 bot.command('reset', async (ctx) => {
   // Reset the session
-  ctx.session.step = 'idle';
-  ctx.session.fileId = undefined;
-  ctx.session.fileType = undefined;
-  ctx.session.fileName = undefined;
-  ctx.session.filePath = undefined;
-  ctx.session.description = undefined;
-  ctx.session.orientation = undefined;
-  ctx.session.tarotCard = undefined;
-  ctx.session.targetFolder = undefined;
+  resetSession(ctx);
   
   await ctx.reply('Session reset. You can start a new upload now.');
 });

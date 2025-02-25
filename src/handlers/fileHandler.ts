@@ -4,7 +4,7 @@ import { mkdir } from 'node:fs/promises';
 import type { MyContext } from '../types';
 import type { FileFlavor } from '@grammyjs/files';
 import { createNewFolder, createNoteFile } from '../utils/file';
-
+import { resetSession } from '../utils/reset';
 /**
  * Shared function to handle media uploads
  */
@@ -73,6 +73,7 @@ export const handlePhoto = async (ctx: FileFlavor<MyContext>): Promise<void> => 
  * Handles video uploads
  */
 export const handleVideo = async (ctx: FileFlavor<MyContext>): Promise<void> => {
+  
   const video = ctx.msg?.video;
   if (!video) {
     await ctx.reply('Failed to process video. Please try again.');
@@ -154,15 +155,7 @@ export const finalizeUpload = async (ctx: FileFlavor<MyContext>): Promise<void> 
     await ctx.reply(`✅ Upload complete! Your ${ctx.session.fileType} has been saved to Kirby CMS.`);
     
     // Reset session
-    ctx.session.step = 'idle';
-    ctx.session.fileId = undefined;
-    ctx.session.fileType = undefined;
-    ctx.session.fileName = undefined;
-    ctx.session.filePath = undefined;
-    ctx.session.description = undefined;
-    ctx.session.orientation = undefined;
-    ctx.session.tarotCard = undefined;
-    ctx.session.targetFolder = undefined;
+    resetSession(ctx);
     
   } catch (error) {
     console.error('Error finalizing upload:', error);
