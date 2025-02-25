@@ -11,7 +11,6 @@ import type { MyContext, SessionData } from './src/types';
 // Import handlers
 import { handlePhoto, handleVideo, handleAudio, handleText } from './src/handlers/fileHandler';
 import { handleDescription, handleOrientation, handleTarotCard } from './src/handlers/conversationHandler';
-import { mainMenu, startMenu } from './src/handlers/menuHandler';
 
 // Create a bot instance with FileFlavor
 const bot = new Bot<FileFlavor<MyContext>>(BOT_TOKEN as string);
@@ -44,19 +43,18 @@ bot.use(session({
 }));
 
 // Register menus
-bot.use(mainMenu);
-bot.use(startMenu);
+
+await bot.api.setMyCommands([
+  { command: "start", description: "Start the bot" },
+  { command: "help", description: "Show help text" },
+  { command: "reset", description: "Upload a new file" },
+]);
 
 // Command handlers
 bot.command('start', async (ctx) => {
   await ctx.reply(
-    'Welcome to the Kirby CMS Uploader Bot! 👋\n\nThis bot helps you upload content to Kirby CMS.',
-    { reply_markup: startMenu }
+    'Welcome to the Kirby CMS Uploader Bot! 👋\n\nThis bot helps you upload content to Kirby CMS. Send me a photo, video, audio, or text message to begin uploading.',
   );
-});
-
-bot.command('menu', async (ctx) => {
-  await ctx.reply('Main Menu:', { reply_markup: mainMenu });
 });
 
 bot.command('reset', async (ctx) => {
@@ -79,7 +77,6 @@ bot.command('help', async (ctx) => {
     'This bot helps you upload content to Kirby CMS.\n\n' +
     'Available commands:\n' +
     '/start - Start the bot\n' +
-    '/menu - Show the main menu\n' +
     '/reset - Reset your current session\n' +
     '/help - Show this help message'
   );
