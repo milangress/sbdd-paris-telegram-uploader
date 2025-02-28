@@ -29,3 +29,7 @@ logs/
 # OS specific
 .DS_Store
 Thumbs.db 
+
+temp/
+kirby/
+kirby-tarot-diary/
