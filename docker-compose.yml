@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  telegram-bot:
+    image: milangress/sbdd-paris-telegram-uploader:latest
+    container_name: sbdd-paris-telegram-uploader
+    restart: unless-stopped
+    environment:
+      # Replace with your actual Telegram bot token
+      - BOT_TOKEN=your_telegram_bot_token
+    volumes:
+      # Replace with the path to your Kirby content directory
+      - /path/to/kirby/content:/app/kirby/content
