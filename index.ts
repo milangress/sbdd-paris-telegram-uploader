@@ -12,7 +12,7 @@ import type { MyContext, SessionData } from './src/types';
 
 // Import handlers
 import { handlePhoto, handleVideo, handleAudio, handleText } from './src/handlers/fileHandler';
-import { handleDescription, handleOrientation, handleTarotCard, handleHouse } from './src/handlers/conversationHandler';
+import { handleOrientation, handleTarotCard, handleTarotConfirmation, handleHouse } from './src/handlers/conversationHandler';
 
 // Create a bot instance with the combined MyContext type
 const bot = new Bot<MyContext>(BOT_TOKEN as string);
@@ -68,44 +68,13 @@ bot.command('reset', async (ctx) => {
 
 // Tarot info commands
 bot.command('tarot', async (ctx) => {
-  const args = ctx.match.trim();
+  // Show all tarot info as multiple messages
+  const messages = getAllTarotInfo();
   
-  if (!args) {
-    // If no specific card is requested, show all tarot info as multiple messages
-    const messages = getAllTarotInfo();
-    
-    // Send each message in sequence
-    for (const message of messages) {
-      await ctx.reply(message, { parse_mode: 'Markdown' });
-    }
-    return;
+  // Send each message in sequence
+  for (const message of messages) {
+    await ctx.reply(message, { parse_mode: 'Markdown' });
   }
-  
-  // Get info for a specific card
-  const cardInfo = getTarotCardInfo(args);
-  
-  if (!cardInfo) {
-    await ctx.reply(`Sorry, I couldn't find information about "${args}". Try using the exact card name or check /tarot for all cards.`);
-    return;
-  }
-  
-  let message = `🔮 *${cardInfo.name}* 🔮\n\n`;
-  
-  // Format based on whether it's a suit or a major arcana card
-  if ('element' in cardInfo) {
-    // It's a suit
-    message += `*Element:* ${cardInfo.element}\n`;
-    message += `*Themes:* ${cardInfo.themes}\n`;
-    message += `*Focus:* ${cardInfo.focus}\n`;
-    message += `*Strengths:* ${cardInfo.strengths}\n`;
-    message += `*Challenges:* ${cardInfo.challenges}`;
-  } else {
-    // It's a major arcana card
-    message += `*Upright:* ${cardInfo.upright}\n`;
-    message += `*Reversed:* ${cardInfo.reverse}`;
-  }
-  
-  await ctx.reply(message, { parse_mode: 'Markdown' });
 });
 
 // Lock and unlock commands
@@ -149,16 +118,14 @@ bot.on('message:text', async (ctx, next) => {
     await next();
     return;
   }
-
-  console.log(ctx.from);
   
   // Handle conversation steps
-  if (ctx.session.step === 'awaiting_description') {
-    await handleDescription(ctx);
-  } else if (ctx.session.step === 'awaiting_orientation') {
+  if (ctx.session.step === 'awaiting_orientation') {
     await handleOrientation(ctx);
   } else if (ctx.session.step === 'awaiting_tarot_card') {
     await handleTarotCard(ctx);
+  } else if (ctx.session.step === 'awaiting_tarot_confirmation') {
+    await handleTarotConfirmation(ctx);
   } else if (ctx.session.step === 'awaiting_house') {
     await handleHouse(ctx);
   } else {

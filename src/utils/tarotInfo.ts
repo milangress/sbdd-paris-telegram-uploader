@@ -177,13 +177,13 @@ export function getAllTarotInfo(): string[] {
   const messages: string[] = [];
   
   // Introduction message
-  messages.push('🔮 *Tarot Card Information* 🔮\n\nUse /tarot [card name] to get information about a specific card.');
+  messages.push('🔮 *Tarot Card Information* 🔮\n\nUse /tarot to view information about all tarot cards.');
   
   // Suits information message
   let suitsMessage = '*Tarot Suits*\n\n';
   
   for (const [key, suit] of Object.entries(tarotSuits)) {
-    suitsMessage += `*${suit.name}* (${suit.element})\n`;
+    suitsMessage += `*${suit.name}*\n`;
     suitsMessage += `Themes: ${suit.themes}\n`;
     suitsMessage += `Focus: ${suit.focus}\n`;
     suitsMessage += `Strengths: ${suit.strengths}\n`;

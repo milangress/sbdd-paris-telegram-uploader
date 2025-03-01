@@ -4,7 +4,8 @@ import { mkdir } from 'node:fs/promises';
 import type { MyContext } from '../types';
 import { generateUuid, createUuidFile, updateSiteTxt } from '../utils/file';
 import { resetSession } from '../utils/reset';
-import { KIRBY_COLLECTION_DIR_ABSOLUTE } from '../config';
+import { KIRBY_COLLECTION_DIR_ABSOLUTE, TAROT_CARDS } from '../config';
+import { Keyboard } from 'grammy';
 
 /**
  * Shared function to handle media uploads
@@ -33,16 +34,53 @@ const handleMediaUpload = async (
     await createUuidFile(targetPath, uuid);
     
     // Set session data
-    ctx.session.step = 'awaiting_description';
     ctx.session.fileId = fileId;
     ctx.session.fileType = fileType;
     ctx.session.uuid = uuid;
     
-    await ctx.reply(`${fileType} received! Please provide a description for this ${fileType}.`);
+    
+    // Move directly to tarot card selection
+    await showTarotCardSelection(ctx);
   } catch (error) {
     console.error(`Error processing ${fileType}:`, error);
     await ctx.reply(`Failed to process ${fileType}. Please try again.`);
   }
+};
+
+/**
+ * Shows the tarot card selection keyboard
+ */
+const showTarotCardSelection = async (ctx: MyContext): Promise<void> => {
+  // Set step to awaiting tarot card
+  ctx.session.step = 'awaiting_tarot_card';
+  
+  // Create tarot card keyboard
+  const keyboard = new Keyboard();
+  
+  // Add Major Arcana cards (first 22 cards)
+  for (let i = 0; i < 22; i++) {
+    keyboard.text(TAROT_CARDS[i].display);
+    // Add a row break after every 2 cards
+    if ((i + 1) % 2 === 0 && i < 21) {
+      keyboard.row();
+    }
+  }
+  
+  // Add a row break after Major Arcana
+  keyboard.row();
+  
+  // Add Tarot Suits (last 4 items)
+  for (let i = 22; i < TAROT_CARDS.length; i++) {
+    keyboard.text(TAROT_CARDS[i].display);
+    if ((i + 1) % 2 === 0 && i < TAROT_CARDS.length - 1) {
+      keyboard.row();
+    }
+  }
+  
+  keyboard.resized().oneTime();
+  
+  // Ask for tarot card
+  await ctx.reply('Please select a tarot card:', { reply_markup: keyboard });
 };
 
 /**
@@ -103,12 +141,12 @@ export const handleText = async (ctx: MyContext): Promise<void> => {
     const uuid = generateUuid();
     
     // For text, we don't need to save a file, just set the session data
-    ctx.session.step = 'awaiting_description';
     ctx.session.fileType = 'text';
     ctx.session.description = text; // For text, we use the text itself as content
     ctx.session.uuid = uuid;
     
-    await ctx.reply('Text received! Please provide a description for this text (or send "same" to use the text itself as the description).');
+    // Move directly to tarot card selection
+    await showTarotCardSelection(ctx);
   } catch (error) {
     console.error('Error processing text:', error);
     await ctx.reply('Failed to process text. Please try again.');
@@ -124,16 +162,14 @@ export const finalizeUpload = async (ctx: MyContext): Promise<void> => {
     await updateSiteTxt(
       ctx.session.uuid || generateUuid(),
       ctx.session.fileType || 'unknown',
-      ctx.session.description || 'No description provided',
-      ctx.session.orientation || 'Not specified',
-      ctx.session.tarotCard || 'Not specified',
-      ctx.session.house || 'house1'
+      ctx.session.description || '',
+      ctx.session.orientation || '',
+      ctx.session.tarotCard || '',
+      ctx.session.house || ''
     );
     
     // Notify the user
-    await ctx.reply(`✅ Upload complete! Your ${ctx.session.fileType} has been saved to Kirby CMS.
-    
-A backup of the site.txt file has been created in the site-txt-bak folder.`);
+    await ctx.reply(`✅ Upload complete! Your ${ctx.session.fileType} has been saved to Kirby CMS.`);
         
   } catch (error) {
     console.error('Error finalizing upload:', error);
