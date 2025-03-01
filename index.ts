@@ -3,6 +3,7 @@ import { hydrateFiles } from '@grammyjs/files';
 import { mkdir } from 'node:fs/promises';
 import path from 'path';
 import { resetSession } from './src/utils/reset';
+import { lockBot, unlockBot, isBotLocked } from './src/utils/lockState';
 
 // Import configuration
 import { BOT_TOKEN, ALLOWED_USER_IDS } from './src/config';
@@ -48,6 +49,8 @@ await bot.api.setMyCommands([
   { command: "start", description: "Start the bot" },
   { command: "help", description: "Show help text" },
   { command: "reset", description: "Upload a new file" },
+  { command: "lock", description: "Lock the bot for everybody" },
+  { command: "unlock", description: "Unlock the bot everybody" },
 ]);
 
 // Command handlers
@@ -68,8 +71,38 @@ bot.command('help', async (ctx) => {
     'Available commands:\n' +
     '/start - Start the bot\n' +
     '/reset - Reset your current session\n' +
-    '/help - Show this help message'
+    '/help - Show this help message\n' +
+    '/lock - Lock the bot for everybody\n' +
+    '/unlock - Unlock the bot for everybody'
   );
+});
+
+// Lock and unlock commands
+bot.command('lock', async (ctx) => {
+  lockBot();
+  await ctx.reply('🔒 Bot is now locked. No new uploads will be processed until unlocked.');
+});
+
+bot.command('unlock', async (ctx) => {
+  unlockBot();
+  await ctx.reply('🔓 Bot is now unlocked. Users can upload content again.');
+});
+
+// Middleware to check if bot is locked before processing media or text
+bot.use(async (ctx, next) => {
+  // Skip lock check for commands
+  if (ctx.message?.text?.startsWith('/')) {
+    await next();
+    return;
+  }
+  
+  // Check if bot is locked
+  if (isBotLocked()) {
+    await ctx.reply('🔒 😞 The bot is currently locked. Please try again later when it\'s unlocked.');
+    return;
+  }
+  
+  await next();
 });
 
 // Media handlers
@@ -85,6 +118,8 @@ bot.on('message:text', async (ctx, next) => {
     await next();
     return;
   }
+
+  console.log(ctx.from);
   
   // Handle conversation steps
   if (ctx.session.step === 'awaiting_description') {
