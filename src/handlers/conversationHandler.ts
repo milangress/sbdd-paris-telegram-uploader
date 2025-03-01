@@ -44,19 +44,6 @@ export const handleOrientation = async (ctx: MyContext): Promise<void> => {
 
   const orientation = ctx.msg.text.toLowerCase();
   
-  // Validate orientation
-  if (!ORIENTATIONS.map(o => o.toLowerCase()).includes(orientation)) {
-    // Create orientation keyboard using Keyboard class
-    const keyboard = new Keyboard();
-    ORIENTATIONS.forEach(orientation => {
-      keyboard.text(orientation).row();
-    });
-    keyboard.resized().oneTime();
-    
-    await ctx.reply('Please select a valid orientation:', { reply_markup: keyboard });
-    return;
-  }
-
   // Set the orientation
   ctx.session.orientation = orientation;
   
@@ -87,23 +74,6 @@ export const handleTarotCard = async (ctx: MyContext): Promise<void> => {
   }
 
   const tarotCard = ctx.msg.text;
-  
-  // Validate tarot card
-  if (!TAROT_CARDS.includes(tarotCard)) {
-    // Create tarot card keyboard using Keyboard class
-    const keyboard = new Keyboard();
-    for (let i = 0; i < TAROT_CARDS.length; i++) {
-      keyboard.text(TAROT_CARDS[i]);
-      // Add a row break after every 3 cards
-      if ((i + 1) % 3 === 0 && i < TAROT_CARDS.length - 1) {
-        keyboard.row();
-      }
-    }
-    keyboard.resized().oneTime();
-    
-    await ctx.reply('Please select a valid tarot card:', { reply_markup: keyboard });
-    return;
-  }
 
   // Set the tarot card
   ctx.session.tarotCard = tarotCard;
@@ -132,18 +102,6 @@ export const handleHouse = async (ctx: MyContext): Promise<void> => {
 
   const house = ctx.msg.text;
   
-  // Validate house
-  if (!HOUSES.includes(house)) {
-    // Create house keyboard
-    const keyboard = new Keyboard();
-    HOUSES.forEach(house => {
-      keyboard.text(house).row();
-    });
-    keyboard.resized().oneTime();
-    
-    await ctx.reply('Please select a valid house (house1, house2, house3, or house4):', { reply_markup: keyboard });
-    return;
-  }
 
   // Set the house
   ctx.session.house = house;
