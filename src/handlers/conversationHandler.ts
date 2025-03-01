@@ -2,6 +2,15 @@ import type { MyContext } from '../types';
 import { Keyboard } from 'grammy';
 import { ORIENTATIONS, TAROT_CARDS, HOUSES } from '../config';
 import { finalizeUpload } from './fileHandler';
+import { getTarotCardInfo, ALL_TAROT_CARDS } from '../utils/tarotInfo';
+import { 
+  showTarotCardSelection, 
+  showMajorArcanaSelection, 
+  showSuitCardSelection,
+  showOrientationSelection,
+  showHouseSelection,
+  showTarotConfirmation
+} from './keyboardHandler';
 
 /**
  * Handles the orientation step of the conversation
@@ -17,17 +26,43 @@ export const handleOrientation = async (ctx: MyContext): Promise<void> => {
   ctx.session.orientation = orientation;
   
   // Move to the next step - ask for house
-  ctx.session.step = 'awaiting_house';
+  await showHouseSelection(ctx, HOUSES);
+};
+
+/**
+ * Handles the tarot category selection step of the conversation
+ */
+export const handleTarotCategory = async (ctx: MyContext): Promise<void> => {
+  if (ctx.session.step !== 'awaiting_tarot_category' || !ctx.msg?.text) {
+    return;
+  }
+
+  const userInput = ctx.msg.text;
   
-  // Create house keyboard
-  const keyboard = new Keyboard();
-  HOUSES.forEach(house => {
-    keyboard.text(house).row();
-  });
-  keyboard.resized().oneTime();
-  
-  // Ask for house
-  await ctx.reply('Please select a house:', { reply_markup: keyboard });
+  // Handle category selection
+  if (userInput === "Major Arcana") {
+    await showMajorArcanaSelection(ctx);
+    return;
+  } else if (userInput === "Cups") {
+    await showSuitCardSelection(ctx, 'cups');
+    return;
+  } else if (userInput === "Wands") {
+    await showSuitCardSelection(ctx, 'wands');
+    return;
+  } else if (userInput === "Swords") {
+    await showSuitCardSelection(ctx, 'swords');
+    return;
+  } else if (userInput === "Pentacles") {
+    await showSuitCardSelection(ctx, 'pentacles');
+    return;
+  } else {
+    // If it's not a valid category, ask again
+    await ctx.reply(`"${userInput}" is not a recognized tarot category. Please select a valid category.`);
+    
+    // Show the category selection again
+    await showTarotCardSelection(ctx);
+    return;
+  }
 };
 
 /**
@@ -38,58 +73,30 @@ export const handleTarotCard = async (ctx: MyContext): Promise<void> => {
     return;
   }
 
-  const tarotCardInput = ctx.msg.text;
+  const userInput = ctx.msg.text;
+  
+  // Handle back button
+  if (userInput === "← Back to Categories") {
+    // Go back to category selection
+    await showTarotCardSelection(ctx);
+    return;
+  }
 
-  // First, try to find the card by display name
+  // Try to find the card by display name
   const cardByDisplay = TAROT_CARDS.find(card => 
-    card.display.toLowerCase() === tarotCardInput.toLowerCase().trim()
+    card.display.toLowerCase() === userInput.toLowerCase().trim()
   );
   
   if (cardByDisplay) {
     // Found by display name, save the key
     ctx.session.tarotCard = cardByDisplay.key;
  
-    // Get card info to display to user
-    const { getTarotCardInfo } = await import('../utils/tarotInfo');
-    const cardInfo = getTarotCardInfo(cardByDisplay.key);
-    
-    if (cardInfo) {
-      // Create confirmation keyboard
-      const keyboard = new Keyboard()
-        .text("Yes, use this card")
-        .text("No, choose another card")
-        .resized().oneTime();
-      
-      let message = `🔮 *${cardInfo.name}* 🔮\n\n`;
-      
-      // Format based on whether it's a suit or a major arcana card
-      if ('themes' in cardInfo && 'focus' in cardInfo) {
-        // It's a suit
-        message += `*Themes:* ${cardInfo.themes}\n`;
-        message += `*Focus:* ${cardInfo.focus}\n`;
-        message += `*Strengths:* ${cardInfo.strengths}\n`;
-        message += `*Challenges:* ${cardInfo.challenges}\n\n`;
-      } else if ('upright' in cardInfo && 'reverse' in cardInfo) {
-        // It's a major arcana card
-        message += `*Upright:* ${cardInfo.upright}\n`;
-        message += `*Reversed:* ${cardInfo.reverse}\n\n`;
-      }
-      
-      message += "Is this the card you want to use?";
-      
-      // Move to confirmation step
-      ctx.session.step = 'awaiting_tarot_confirmation';
-      
-      // Show card info and ask for confirmation
-      await ctx.reply(message, { 
-        parse_mode: 'Markdown',
-        reply_markup: keyboard
-      });
-      return;
-    }
+    // Show confirmation with card details
+    await showTarotConfirmation(ctx, cardByDisplay.key);
+    return;
   } else {
     // If it's not a valid card, ask again
-    await ctx.reply(`"${tarotCardInput}" is not a recognized tarot card. Please select a valid tarot card:`);
+    await ctx.reply(`"${userInput}" is not a recognized tarot card. Please select a valid tarot card or go back to categories.`);
     return;
   }
 };
@@ -106,48 +113,10 @@ export const handleTarotConfirmation = async (ctx: MyContext): Promise<void> => 
   
   if (response.includes('yes')) {
     // User confirmed the card, move to orientation selection
-    ctx.session.step = 'awaiting_orientation';
-    
-    // Create orientation keyboard using Keyboard class
-    const keyboard = new Keyboard();
-    ORIENTATIONS.forEach(orientation => {
-      keyboard.text(orientation).row();
-    });
-    keyboard.resized().oneTime();
-    
-    // Ask for orientation
-    await ctx.reply('Please select the orientation:', { reply_markup: keyboard });
+    await showOrientationSelection(ctx, ORIENTATIONS);
   } else {
-    // User wants to choose another card, go back to card selection
-    ctx.session.step = 'awaiting_tarot_card';
-    
-    // Create tarot card keyboard again
-    const keyboard = new Keyboard();
-    
-    // Add Major Arcana cards (first 22 cards)
-    for (let i = 0; i < 22; i++) {
-      keyboard.text(TAROT_CARDS[i].display);
-      // Add a row break after every 2 cards
-      if ((i + 1) % 2 === 0 && i < 21) {
-        keyboard.row();
-      }
-    }
-    
-    // Add a row break after Major Arcana
-    keyboard.row();
-    
-    // Add Tarot Suits (last 4 items)
-    for (let i = 22; i < TAROT_CARDS.length; i++) {
-      keyboard.text(TAROT_CARDS[i].display);
-      if ((i + 1) % 2 === 0 && i < TAROT_CARDS.length - 1) {
-        keyboard.row();
-      }
-    }
-    
-    keyboard.resized().oneTime();
-    
-    // Ask for tarot card again
-    await ctx.reply('Please select a different tarot card:', { reply_markup: keyboard });
+    // User wants to choose another card, go back to category selection
+    await showTarotCardSelection(ctx);
   }
 };
 
@@ -167,17 +136,10 @@ export const handleHouse = async (ctx: MyContext): Promise<void> => {
   // Get the display name for the tarot card
   let tarotCardDisplay = ctx.session.tarotCard || 'Unknown';
   
-  // Find the display name from the TAROT_CARDS array
-  const tarotCard = TAROT_CARDS.find(card => card.key === ctx.session.tarotCard);
-  if (tarotCard) {
-    tarotCardDisplay = tarotCard.display;
-  } else if (ctx.session.tarotCard) {
-    // If not found in the array, try to get it from the tarot info utility
-    const { getTarotCardInfo } = await import('../utils/tarotInfo');
-    const cardInfo = getTarotCardInfo(ctx.session.tarotCard);
-    if (cardInfo && cardInfo.name) {
-      tarotCardDisplay = cardInfo.name;
-    }
+  // Get card info from our unified structure
+  const cardInfo = getTarotCardInfo(ctx.session.tarotCard || '');
+  if (cardInfo) {
+    tarotCardDisplay = cardInfo.display;
   }
   
   // Show summary
@@ -190,7 +152,7 @@ Orientation: ${ctx.session.orientation}
 Tarot Card: ${tarotCardDisplay}
 House: ${ctx.session.house}
 
-Saving to Kirby CMS...`
+Finalizing your upload...`
   );
   
   // Finalize the upload

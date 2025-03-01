@@ -12,7 +12,13 @@ import type { MyContext, SessionData } from './src/types';
 
 // Import handlers
 import { handlePhoto, handleVideo, handleAudio, handleText } from './src/handlers/fileHandler';
-import { handleOrientation, handleTarotCard, handleTarotConfirmation, handleHouse } from './src/handlers/conversationHandler';
+import { 
+  handleOrientation, 
+  handleTarotCard, 
+  handleTarotConfirmation, 
+  handleHouse,
+  handleTarotCategory 
+} from './src/handlers/conversationHandler';
 
 // Create a bot instance with the combined MyContext type
 const bot = new Bot<MyContext>(BOT_TOKEN as string);
@@ -122,6 +128,8 @@ bot.on('message:text', async (ctx, next) => {
   // Handle conversation steps
   if (ctx.session.step === 'awaiting_orientation') {
     await handleOrientation(ctx);
+  } else if (ctx.session.step === 'awaiting_tarot_category') {
+    await handleTarotCategory(ctx);
   } else if (ctx.session.step === 'awaiting_tarot_card') {
     await handleTarotCard(ctx);
   } else if (ctx.session.step === 'awaiting_tarot_confirmation') {

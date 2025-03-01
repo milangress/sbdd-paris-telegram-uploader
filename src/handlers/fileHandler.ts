@@ -4,8 +4,8 @@ import { mkdir } from 'node:fs/promises';
 import type { MyContext } from '../types';
 import { generateUuid, createUuidFile, updateSiteTxt } from '../utils/file';
 import { resetSession } from '../utils/reset';
-import { KIRBY_COLLECTION_DIR_ABSOLUTE, TAROT_CARDS } from '../config';
-import { Keyboard } from 'grammy';
+import { KIRBY_COLLECTION_DIR_ABSOLUTE } from '../config';
+import { showTarotCardSelection } from './keyboardHandler';
 
 /**
  * Shared function to handle media uploads
@@ -45,42 +45,6 @@ const handleMediaUpload = async (
     console.error(`Error processing ${fileType}:`, error);
     await ctx.reply(`Failed to process ${fileType}. Please try again.`);
   }
-};
-
-/**
- * Shows the tarot card selection keyboard
- */
-const showTarotCardSelection = async (ctx: MyContext): Promise<void> => {
-  // Set step to awaiting tarot card
-  ctx.session.step = 'awaiting_tarot_card';
-  
-  // Create tarot card keyboard
-  const keyboard = new Keyboard();
-  
-  // Add Major Arcana cards (first 22 cards)
-  for (let i = 0; i < 22; i++) {
-    keyboard.text(TAROT_CARDS[i].display);
-    // Add a row break after every 2 cards
-    if ((i + 1) % 2 === 0 && i < 21) {
-      keyboard.row();
-    }
-  }
-  
-  // Add a row break after Major Arcana
-  keyboard.row();
-  
-  // Add Tarot Suits (last 4 items)
-  for (let i = 22; i < TAROT_CARDS.length; i++) {
-    keyboard.text(TAROT_CARDS[i].display);
-    if ((i + 1) % 2 === 0 && i < TAROT_CARDS.length - 1) {
-      keyboard.row();
-    }
-  }
-  
-  keyboard.resized().oneTime();
-  
-  // Ask for tarot card
-  await ctx.reply('Please select a tarot card:', { reply_markup: keyboard });
 };
 
 /**

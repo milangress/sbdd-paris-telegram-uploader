@@ -3,7 +3,7 @@ import type { FileFlavor } from '@grammyjs/files';
 // Session data for storing user's upload progress
 export interface SessionData {
   // Current step in the upload process
-  step: 'idle' | 'awaiting_orientation' | 'awaiting_tarot_card' | 'awaiting_tarot_confirmation' | 'awaiting_house';
+  step: 'idle' | 'awaiting_orientation' | 'awaiting_tarot_card' | 'awaiting_tarot_confirmation' | 'awaiting_house' | 'awaiting_tarot_category';
   
   // File information
   fileId?: string;

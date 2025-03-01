@@ -1,6 +1,7 @@
 import path from 'path';
 import { mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import { ALL_TAROT_CARDS, MAJOR_ARCANA_CARDS, CUPS_CARDS, WANDS_CARDS, SWORDS_CARDS, PENTACLES_CARDS } from '../utils/tarotInfo';
 
 // Bot configuration
 export const BOT_TOKEN = Bun.env.BOT_TOKEN;
@@ -37,37 +38,18 @@ export const ALLOWED_USER_IDS = Bun.env.ALLOWED_USER_IDS
   ? Bun.env.ALLOWED_USER_IDS.split(',').map(id => Number(id.trim()))
   : [];
 
-// Tarot cards list with display names
-export const TAROT_CARDS = [
-  // Major Arcana
-  { key: 'fool', display: 'The Fool' },
-  { key: 'magician', display: 'The Magician' },
-  { key: 'highpriestess', display: 'The High Priestess' },
-  { key: 'empress', display: 'The Empress' },
-  { key: 'emperor', display: 'The Emperor' },
-  { key: 'hierophant', display: 'The Hierophant' },
-  { key: 'lovers', display: 'The Lovers' },
-  { key: 'chariot', display: 'The Chariot' },
-  { key: 'strength', display: 'Strength' },
-  { key: 'hermit', display: 'The Hermit' },
-  { key: 'wheeloffortune', display: 'Wheel of Fortune' },
-  { key: 'justice', display: 'Justice' },
-  { key: 'hangedman', display: 'The Hanged Man' },
-  { key: 'death', display: 'Death' },
-  { key: 'temperance', display: 'Temperance' },
-  { key: 'devil', display: 'The Devil' },
-  { key: 'tower', display: 'The Tower' },
-  { key: 'star', display: 'The Star' },
-  { key: 'moon', display: 'The Moon' },
-  { key: 'sun', display: 'The Sun' },
-  { key: 'judgment', display: 'Judgement' },
-  { key: 'world', display: 'The World' },
-  // Tarot Suits
-  { key: 'swords', display: 'Swords (Air)' },
-  { key: 'wands', display: 'Wands (Fire)' },
-  { key: 'cups', display: 'Cups (Water)' },
-  { key: 'pentacles', display: 'Pentacles (Earth)' }
+// Tarot cards for selection
+export const TAROT_CATEGORIES = [
+  { key: 'major', display: 'Major Arcana' },
+  { key: 'cups', display: 'Cups' },
+  { key: 'wands', display: 'Wands' },
+  { key: 'swords', display: 'Swords' },
+  { key: 'pentacles', display: 'Pentacles' }
 ];
+
+// Use the card objects directly from our tarotInfo module
+export const TAROT_CARDS = Object.values(ALL_TAROT_CARDS)
+  .filter(card => card.category !== 'suit'); // Exclude the suit info cards
 
 // Orientation options
 export const ORIENTATIONS = ['landscape', 'portrait'];
