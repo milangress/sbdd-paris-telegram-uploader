@@ -165,7 +165,7 @@ export async function showTarotConfirmation(ctx: MyContext, cardKey: string): Pr
   // Create confirmation keyboard
   const keyboard = new Keyboard()
     .text("Yes, use this card")
-    .text("No, choose another card")
+    .text("No, choose another")
     .resized().oneTime();
   
   let message = `🔮 *${cardInfo.name}* 🔮\n\n`;
