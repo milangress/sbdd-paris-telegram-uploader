@@ -1,5 +1,6 @@
 import path from 'path';
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import type { KirbyNote } from '../types';
 import { KIRBY_COLLECTION_DIR_ABSOLUTE } from '../config';
 
@@ -8,12 +9,39 @@ import { KIRBY_COLLECTION_DIR_ABSOLUTE } from '../config';
  * @returns A random 16-character string
  */
 export const generateUuid = (): string => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   for (let i = 0; i < 16; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
+};
+
+/**
+ * Creates a backup of the site.txt file
+ * @param content The content to backup
+ * @param suffix Optional suffix to add to the backup filename
+ * @returns The path to the backup file
+ */
+export const createSiteBackup = async (
+  content: string,
+  suffix: string = ''
+): Promise<string> => {
+  // Create backup directory if it doesn't exist
+  const backupDir = path.join(KIRBY_COLLECTION_DIR_ABSOLUTE, 'site-txt-bak');
+  if (!existsSync(backupDir)) {
+    await mkdir(backupDir, { recursive: true });
+  }
+  
+  // Create a timestamp for the backup filename
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const backupFileName = `site-${timestamp}${suffix ? '-' + suffix : ''}.txt`;
+  const backupPath = path.join(backupDir, backupFileName);
+  
+  // Write the backup file using Bun.write
+  await Bun.write(backupPath, content);
+  
+  return backupPath;
 };
 
 /**
@@ -35,11 +63,9 @@ export const saveFileToKirby = async (
   // Target path in Kirby content directory
   const targetPath = path.join(KIRBY_COLLECTION_DIR_ABSOLUTE, fileName);
   
-  // Read the file content
-  const fileContent = await readFile(filePath);
-  
-  // Write to the target location
-  await writeFile(targetPath, fileContent);
+  // Read the source file using Bun.file and write to the target location
+  const sourceFile = Bun.file(filePath);
+  await Bun.write(targetPath, sourceFile);
   
   // Create the UUID text file
   await createUuidFile(targetPath, uuid);
@@ -62,7 +88,9 @@ export const createUuidFile = async (
   // Format the content with just the UUID
   const content = `Uuid: ${uuid}`;
 
-  await writeFile(txtPath, content);
+  // Write using Bun.write
+  await Bun.write(txtPath, content);
+  
   return txtPath;
 };
 
@@ -87,8 +115,12 @@ export const updateSiteTxt = async (
   // Path to site.txt
   const siteTxtPath = path.join(KIRBY_COLLECTION_DIR_ABSOLUTE, 'site.txt');
   
-  // Read the current content
-  const content = await readFile(siteTxtPath, 'utf-8');
+  // Read the current content using Bun.file
+  const siteFile = Bun.file(siteTxtPath);
+  const content = await siteFile.text();
+  
+  // Create a backup of the original content
+  await createSiteBackup(content, 'before');
   
   // Find the Cardscontent field
   const cardsContentMatch = content.match(/Cardscontent: (.*?)(\n----|\n<CURRENT_CURSOR_POSITION>)/s);
@@ -137,8 +169,11 @@ export const updateSiteTxt = async (
     `Cardscontent: ${JSON.stringify(cardsContent)}$2`
   );
   
-  // Write the updated content back to the file
-  await writeFile(siteTxtPath, updatedContent);
+  // Write the updated content back to the file using Bun.write
+  await Bun.write(siteTxtPath, updatedContent);
+  
+  // Create a backup of the updated content
+  await createSiteBackup(updatedContent, 'after');
   
   return updatedContent;
 }; 
