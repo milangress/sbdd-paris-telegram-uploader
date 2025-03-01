@@ -8,8 +8,6 @@ export interface SessionData {
   // File information
   fileId?: string;
   fileType?: 'photo' | 'video' | 'audio' | 'text';
-  fileName?: string;
-  filePath?: string;
   
   // User responses
   description?: string;
@@ -17,9 +15,6 @@ export interface SessionData {
   tarotCard?: string;
   house?: string;
   uuid?: string;
-  
-  // Folder where the file will be saved
-  targetFolder?: string;
 }
 
 // Extended context with both session data and file flavor

@@ -45,35 +45,6 @@ export const createSiteBackup = async (
 };
 
 /**
- * Saves a file to the Kirby content directory with a UUID
- * @param filePath Path to the source file
- * @param fileExtension Original file extension
- * @returns Object containing the saved file path and UUID
- */
-export const saveFileToKirby = async (
-  filePath: string,
-  fileExtension: string
-): Promise<{ savedPath: string; uuid: string }> => {
-  // Generate UUID
-  const uuid = generateUuid();
-  
-  // Create filename with UUID
-  const fileName = `${uuid}.${fileExtension}`;
-  
-  // Target path in Kirby content directory
-  const targetPath = path.join(KIRBY_COLLECTION_DIR_ABSOLUTE, fileName);
-  
-  // Read the source file using Bun.file and write to the target location
-  const sourceFile = Bun.file(filePath);
-  await Bun.write(targetPath, sourceFile);
-  
-  // Create the UUID text file
-  await createUuidFile(targetPath, uuid);
-  
-  return { savedPath: targetPath, uuid };
-};
-
-/**
  * Creates a .txt file with the UUID
  * @param filePath Path to the file
  * @param uuid The UUID to save

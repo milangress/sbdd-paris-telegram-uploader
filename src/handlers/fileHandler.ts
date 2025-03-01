@@ -2,8 +2,9 @@ import { InputFile } from 'grammy';
 import path from 'path';
 import { mkdir } from 'node:fs/promises';
 import type { MyContext } from '../types';
-import { saveFileToKirby, generateUuid, updateSiteTxt } from '../utils/file';
+import { generateUuid, createUuidFile, updateSiteTxt } from '../utils/file';
 import { resetSession } from '../utils/reset';
+import { KIRBY_COLLECTION_DIR_ABSOLUTE } from '../config';
 
 /**
  * Shared function to handle media uploads
@@ -14,33 +15,28 @@ const handleMediaUpload = async (
   fileType: 'photo' | 'video' | 'audio',
 ): Promise<void> => {
   try {
-    // Download the file to a temporary location first
+    // Generate UUID immediately
+    const uuid = generateUuid();
+    
+    // Get file extension based on media type
+    const fileExtension = fileType === 'photo' ? 'jpg' : fileType === 'video' ? 'mp4' : 'oga';
+    
+    // Download the file directly to the Kirby content directory with UUID filename
     const file = await ctx.getFile();
+    const fileName = `${uuid}.${fileExtension}`;
+    const targetPath = path.join(KIRBY_COLLECTION_DIR_ABSOLUTE, fileName);
     
-    // Get filename from file path or message, fallback to generic name
-    const fileName = file.file_path 
-      ? path.basename(file.file_path)
-      : (fileType !== 'photo' && ctx?.msg?.[fileType]?.file_name) 
-        ? ctx.msg[fileType].file_name
-        : `content.${fileType}`;
+    // Download to the final location
+    await file.download(targetPath);
     
-    // Create a temporary path for the download
-    const tempDir = path.join(process.cwd(), 'temp');
-    await mkdir(tempDir, { recursive: true });
-    const tempPath = path.join(tempDir, fileName);
-    
-    // Download to the temporary location
-    await file.download(tempPath);
-    
-    // Get file extension
-    const fileExtension = path.extname(fileName).slice(1) || fileType;
+    // Create the UUID text file
+    await createUuidFile(targetPath, uuid);
     
     // Set session data
     ctx.session.step = 'awaiting_description';
     ctx.session.fileId = fileId;
     ctx.session.fileType = fileType;
-    ctx.session.fileName = fileName;
-    ctx.session.filePath = tempPath;
+    ctx.session.uuid = uuid;
     
     await ctx.reply(`${fileType} received! Please provide a description for this ${fileType}.`);
   } catch (error) {
@@ -67,7 +63,6 @@ export const handlePhoto = async (ctx: MyContext): Promise<void> => {
  * Handles video uploads
  */
 export const handleVideo = async (ctx: MyContext): Promise<void> => {
-  
   const video = ctx.msg?.video;
   if (!video) {
     await ctx.reply('Failed to process video. Please try again.');
@@ -104,10 +99,14 @@ export const handleText = async (ctx: MyContext): Promise<void> => {
   }
 
   try {
+    // Generate UUID for text
+    const uuid = generateUuid();
+    
     // For text, we don't need to save a file, just set the session data
     ctx.session.step = 'awaiting_description';
     ctx.session.fileType = 'text';
     ctx.session.description = text; // For text, we use the text itself as content
+    ctx.session.uuid = uuid;
     
     await ctx.reply('Text received! Please provide a description for this text (or send "same" to use the text itself as the description).');
   } catch (error) {
@@ -121,22 +120,9 @@ export const handleText = async (ctx: MyContext): Promise<void> => {
  */
 export const finalizeUpload = async (ctx: MyContext): Promise<void> => {
   try {
-    // Generate a UUID for the file
-    const uuid = generateUuid();
-    
-    // For non-text content, save the file to Kirby
-    if (ctx.session.fileType !== 'text' && ctx.session.filePath) {
-      const fileExtension = path.extname(ctx.session.fileName || '').slice(1) || ctx.session.fileType || '';
-      const { savedPath, uuid: fileUuid } = await saveFileToKirby(ctx.session.filePath, fileExtension);
-      ctx.session.uuid = fileUuid;
-    } else if (ctx.session.fileType === 'text') {
-      // For text, we don't need to save a file, just generate a UUID
-      ctx.session.uuid = uuid;
-    }
-    
     // Update the site.txt file with the new card data
     await updateSiteTxt(
-      ctx.session.uuid || uuid,
+      ctx.session.uuid || generateUuid(),
       ctx.session.fileType || 'unknown',
       ctx.session.description || 'No description provided',
       ctx.session.orientation || 'Not specified',
@@ -145,7 +131,9 @@ export const finalizeUpload = async (ctx: MyContext): Promise<void> => {
     );
     
     // Notify the user
-    await ctx.reply(`✅ Upload complete! Your ${ctx.session.fileType} has been saved to Kirby CMS.`);
+    await ctx.reply(`✅ Upload complete! Your ${ctx.session.fileType} has been saved to Kirby CMS.
+    
+A backup of the site.txt file has been created in the site-txt-bak folder.`);
         
   } catch (error) {
     console.error('Error finalizing upload:', error);
