@@ -10,7 +10,7 @@ import type { MyContext, SessionData } from './src/types';
 
 // Import handlers
 import { handlePhoto, handleVideo, handleAudio, handleText } from './src/handlers/fileHandler';
-import { handleDescription, handleOrientation, handleTarotCard } from './src/handlers/conversationHandler';
+import { handleDescription, handleOrientation, handleTarotCard, handleHouse } from './src/handlers/conversationHandler';
 
 // Create a bot instance with the combined MyContext type
 const bot = new Bot<MyContext>(BOT_TOKEN as string);
@@ -93,6 +93,8 @@ bot.on('message:text', async (ctx, next) => {
     await handleOrientation(ctx);
   } else if (ctx.session.step === 'awaiting_tarot_card') {
     await handleTarotCard(ctx);
+  } else if (ctx.session.step === 'awaiting_house') {
+    await handleHouse(ctx);
   } else {
     // If we're in idle state, treat text as content
     await handleText(ctx);

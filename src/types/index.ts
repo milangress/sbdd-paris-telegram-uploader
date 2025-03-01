@@ -3,7 +3,7 @@ import type { FileFlavor } from '@grammyjs/files';
 // Session data for storing user's upload progress
 export interface SessionData {
   // Current step in the upload process
-  step: 'idle' | 'awaiting_description' | 'awaiting_orientation' | 'awaiting_tarot_card';
+  step: 'idle' | 'awaiting_description' | 'awaiting_orientation' | 'awaiting_tarot_card' | 'awaiting_house';
   
   // File information
   fileId?: string;
@@ -15,6 +15,8 @@ export interface SessionData {
   description?: string;
   orientation?: string;
   tarotCard?: string;
+  house?: string;
+  uuid?: string;
   
   // Folder where the file will be saved
   targetFolder?: string;
@@ -25,9 +27,5 @@ export type MyContext = FileFlavor<Context & SessionFlavor<SessionData>>;
 
 // Kirby note file structure
 export interface KirbyNote {
-  description: string;
-  orientation: string;
-  tarotCard: string;
-  fileType: string;
-  dateUploaded: string;
+  uuid: string;
 } 

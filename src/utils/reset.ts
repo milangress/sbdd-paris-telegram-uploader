@@ -9,6 +9,8 @@ export async function resetSession(ctx: MyContext) {
     ctx.session.description = undefined;
     ctx.session.orientation = undefined;
     ctx.session.tarotCard = undefined;
+    ctx.session.house = undefined;
+    ctx.session.uuid = undefined;
     ctx.session.targetFolder = undefined;
     await ctx.reply('You can start a new upload now.');
 }

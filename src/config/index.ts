@@ -64,4 +64,7 @@ export const TAROT_CARDS = [
 ];
 
 // Orientation options
-export const ORIENTATIONS = ['landscape', 'portrait']; 
+export const ORIENTATIONS = ['landscape', 'portrait'];
+
+// House options
+export const HOUSES = ['house1', 'house2', 'house3', 'house4']; 

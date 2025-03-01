@@ -2,7 +2,7 @@ import { InputFile } from 'grammy';
 import path from 'path';
 import { mkdir } from 'node:fs/promises';
 import type { MyContext } from '../types';
-import { createNewFolder, createNoteFile } from '../utils/file';
+import { saveFileToKirby, generateUuid, updateSiteTxt } from '../utils/file';
 import { resetSession } from '../utils/reset';
 
 /**
@@ -14,10 +14,7 @@ const handleMediaUpload = async (
   fileType: 'photo' | 'video' | 'audio',
 ): Promise<void> => {
   try {
-    // Create a new folder for this upload immediately
-    const targetFolder = await createNewFolder();
-    
-    // Download the file directly to the target folder
+    // Download the file to a temporary location first
     const file = await ctx.getFile();
     
     // Get filename from file path or message, fallback to generic name
@@ -27,19 +24,23 @@ const handleMediaUpload = async (
         ? ctx.msg[fileType].file_name
         : `content.${fileType}`;
     
-    const targetPath = path.join(targetFolder, fileName);
+    // Create a temporary path for the download
+    const tempDir = path.join(process.cwd(), 'temp');
+    await mkdir(tempDir, { recursive: true });
+    const tempPath = path.join(tempDir, fileName);
     
-    // Ensure target directory exists
-    await mkdir(path.dirname(targetPath), { recursive: true });
+    // Download to the temporary location
+    await file.download(tempPath);
     
-    // Download directly to the final location
-    await file.download(targetPath);
+    // Get file extension
+    const fileExtension = path.extname(fileName).slice(1) || fileType;
     
     // Set session data
     ctx.session.step = 'awaiting_description';
     ctx.session.fileId = fileId;
     ctx.session.fileType = fileType;
-    ctx.session.targetFolder = targetFolder;
+    ctx.session.fileName = fileName;
+    ctx.session.filePath = tempPath;
     
     await ctx.reply(`${fileType} received! Please provide a description for this ${fileType}.`);
   } catch (error) {
@@ -103,18 +104,10 @@ export const handleText = async (ctx: MyContext): Promise<void> => {
   }
 
   try {
-    // Create a new folder for this upload immediately
-    const targetFolder = await createNewFolder();
-    
-    // For text, we create a text file with the content right away
-    const textFilePath = path.join(targetFolder, 'content.txt');
-    await Bun.write(textFilePath, text);
-    
-    // Set session data
+    // For text, we don't need to save a file, just set the session data
     ctx.session.step = 'awaiting_description';
     ctx.session.fileType = 'text';
     ctx.session.description = text; // For text, we use the text itself as content
-    ctx.session.targetFolder = targetFolder;
     
     await ctx.reply('Text received! Please provide a description for this text (or send "same" to use the text itself as the description).');
   } catch (error) {
@@ -128,21 +121,28 @@ export const handleText = async (ctx: MyContext): Promise<void> => {
  */
 export const finalizeUpload = async (ctx: MyContext): Promise<void> => {
   try {
-    // Get the target folder from the session
-    const targetFolder = ctx.session.targetFolder;
+    // Generate a UUID for the file
+    const uuid = generateUuid();
     
-    if (!targetFolder) {
-      throw new Error('Target folder not found in session');
+    // For non-text content, save the file to Kirby
+    if (ctx.session.fileType !== 'text' && ctx.session.filePath) {
+      const fileExtension = path.extname(ctx.session.fileName || '').slice(1) || ctx.session.fileType || '';
+      const { savedPath, uuid: fileUuid } = await saveFileToKirby(ctx.session.filePath, fileExtension);
+      ctx.session.uuid = fileUuid;
+    } else if (ctx.session.fileType === 'text') {
+      // For text, we don't need to save a file, just generate a UUID
+      ctx.session.uuid = uuid;
     }
     
-    // Create the note.txt file with all the metadata
-    await createNoteFile(targetFolder, {
-      description: ctx.session.description || 'No description provided',
-      orientation: ctx.session.orientation || 'Not specified',
-      tarotCard: ctx.session.tarotCard || 'Not specified',
-      fileType: ctx.session.fileType || 'unknown',
-      dateUploaded: new Date().toISOString()
-    });
+    // Update the site.txt file with the new card data
+    await updateSiteTxt(
+      ctx.session.uuid || uuid,
+      ctx.session.fileType || 'unknown',
+      ctx.session.description || 'No description provided',
+      ctx.session.orientation || 'Not specified',
+      ctx.session.tarotCard || 'Not specified',
+      ctx.session.house || 'house1'
+    );
     
     // Notify the user
     await ctx.reply(`✅ Upload complete! Your ${ctx.session.fileType} has been saved to Kirby CMS.`);

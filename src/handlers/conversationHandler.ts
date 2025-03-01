@@ -1,6 +1,6 @@
 import type { MyContext } from '../types';
 import { Keyboard } from 'grammy';
-import { ORIENTATIONS, TAROT_CARDS } from '../config';
+import { ORIENTATIONS, TAROT_CARDS, HOUSES } from '../config';
 import { finalizeUpload } from './fileHandler';
 
 /**
@@ -26,7 +26,7 @@ export const handleDescription = async (ctx: MyContext): Promise<void> => {
   // Create orientation keyboard using Keyboard class
   const keyboard = new Keyboard();
   ORIENTATIONS.forEach(orientation => {
-    keyboard.text(orientation);
+    keyboard.text(orientation).row();
   });
   keyboard.resized().oneTime();
   
@@ -49,7 +49,7 @@ export const handleOrientation = async (ctx: MyContext): Promise<void> => {
     // Create orientation keyboard using Keyboard class
     const keyboard = new Keyboard();
     ORIENTATIONS.forEach(orientation => {
-      keyboard.text(orientation);
+      keyboard.text(orientation).row();
     });
     keyboard.resized().oneTime();
     
@@ -108,6 +108,46 @@ export const handleTarotCard = async (ctx: MyContext): Promise<void> => {
   // Set the tarot card
   ctx.session.tarotCard = tarotCard;
   
+  // Move to the next step - ask for house
+  ctx.session.step = 'awaiting_house';
+  
+  // Create house keyboard
+  const keyboard = new Keyboard();
+  HOUSES.forEach(house => {
+    keyboard.text(house).row();
+  });
+  keyboard.resized().oneTime();
+  
+  // Ask for house
+  await ctx.reply('Please select a house (house1, house2, house3, or house4):', { reply_markup: keyboard });
+};
+
+/**
+ * Handles the house step of the conversation
+ */
+export const handleHouse = async (ctx: MyContext): Promise<void> => {
+  if (ctx.session.step !== 'awaiting_house' || !ctx.msg?.text) {
+    return;
+  }
+
+  const house = ctx.msg.text;
+  
+  // Validate house
+  if (!HOUSES.includes(house)) {
+    // Create house keyboard
+    const keyboard = new Keyboard();
+    HOUSES.forEach(house => {
+      keyboard.text(house).row();
+    });
+    keyboard.resized().oneTime();
+    
+    await ctx.reply('Please select a valid house (house1, house2, house3, or house4):', { reply_markup: keyboard });
+    return;
+  }
+
+  // Set the house
+  ctx.session.house = house;
+  
   // Show summary
   await ctx.reply(
     `📝 Summary of your upload:
@@ -116,6 +156,7 @@ Type: ${ctx.session.fileType}
 Description: ${ctx.session.description}
 Orientation: ${ctx.session.orientation}
 Tarot Card: ${ctx.session.tarotCard}
+House: ${ctx.session.house}
 
 Saving to Kirby CMS...`
   );
