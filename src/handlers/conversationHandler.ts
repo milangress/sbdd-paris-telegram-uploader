@@ -52,13 +52,27 @@ export const handleOrientation = async (ctx: MyContext): Promise<void> => {
   
   // Create tarot card keyboard using Keyboard class
   const keyboard = new Keyboard();
-  for (let i = 0; i < TAROT_CARDS.length; i++) {
-    keyboard.text(TAROT_CARDS[i]);
-    // Add a row break after every 3 cards
-    if ((i + 1) % 3 === 0 && i < TAROT_CARDS.length - 1) {
+  
+  // Add Major Arcana cards (first 22 cards)
+  for (let i = 0; i < 22; i++) {
+    keyboard.text(TAROT_CARDS[i].display);
+    // Add a row break after every 2 cards
+    if ((i + 1) % 2 === 0 && i < 21) {
       keyboard.row();
     }
   }
+  
+  // Add a row break after Major Arcana
+  keyboard.row();
+  
+  // Add Tarot Suits (last 4 items)
+  for (let i = 22; i < TAROT_CARDS.length; i++) {
+    keyboard.text(TAROT_CARDS[i].display);
+    if ((i + 1) % 2 === 0 && i < TAROT_CARDS.length - 1) {
+      keyboard.row();
+    }
+  }
+  
   keyboard.resized().oneTime();
   
   // Ask for tarot card
@@ -73,10 +87,23 @@ export const handleTarotCard = async (ctx: MyContext): Promise<void> => {
     return;
   }
 
-  const tarotCard = ctx.msg.text;
+  const tarotCardInput = ctx.msg.text;
 
-  // Set the tarot card
-  ctx.session.tarotCard = tarotCard;
+  // First, try to find the card by display name
+  const cardByDisplay = TAROT_CARDS.find(card => 
+    card.display.toLowerCase() === tarotCardInput.toLowerCase().trim()
+  );
+  
+  if (cardByDisplay) {
+    // Found by display name, save the key
+    ctx.session.tarotCard = cardByDisplay.key;
+ 
+  } else {
+      // If it's not a valid card, ask again
+      await ctx.reply(`"${tarotCardInput}" is not a recognized tarot card. Please select a valid tarot card:`);
+      return;
+  }
+  
   
   // Move to the next step - ask for house
   ctx.session.step = 'awaiting_house';
@@ -89,7 +116,7 @@ export const handleTarotCard = async (ctx: MyContext): Promise<void> => {
   keyboard.resized().oneTime();
   
   // Ask for house
-  await ctx.reply('Please select a house (house1, house2, house3, or house4):', { reply_markup: keyboard });
+  await ctx.reply('Please select a house:', { reply_markup: keyboard });
 };
 
 /**
@@ -102,9 +129,24 @@ export const handleHouse = async (ctx: MyContext): Promise<void> => {
 
   const house = ctx.msg.text;
   
-
   // Set the house
   ctx.session.house = house;
+  
+  // Get the display name for the tarot card
+  let tarotCardDisplay = ctx.session.tarotCard || 'Unknown';
+  
+  // Find the display name from the TAROT_CARDS array
+  const tarotCard = TAROT_CARDS.find(card => card.key === ctx.session.tarotCard);
+  if (tarotCard) {
+    tarotCardDisplay = tarotCard.display;
+  } else if (ctx.session.tarotCard) {
+    // If not found in the array, try to get it from the tarot info utility
+    const { getTarotCardInfo } = await import('../utils/tarotInfo');
+    const cardInfo = getTarotCardInfo(ctx.session.tarotCard);
+    if (cardInfo && cardInfo.name) {
+      tarotCardDisplay = cardInfo.name;
+    }
+  }
   
   // Show summary
   await ctx.reply(
@@ -113,7 +155,7 @@ export const handleHouse = async (ctx: MyContext): Promise<void> => {
 Type: ${ctx.session.fileType}
 Description: ${ctx.session.description}
 Orientation: ${ctx.session.orientation}
-Tarot Card: ${ctx.session.tarotCard}
+Tarot Card: ${tarotCardDisplay}
 House: ${ctx.session.house}
 
 Saving to Kirby CMS...`

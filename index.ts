@@ -4,6 +4,7 @@ import { mkdir } from 'node:fs/promises';
 import path from 'path';
 import { resetSession } from './src/utils/reset';
 import { lockBot, unlockBot, isBotLocked } from './src/utils/lockState';
+import { getAllTarotInfo, getTarotCardInfo } from './src/utils/tarotInfo';
 
 // Import configuration
 import { BOT_TOKEN, ALLOWED_USER_IDS } from './src/config';
@@ -47,7 +48,7 @@ bot.use(session({
 
 await bot.api.setMyCommands([
   { command: "start", description: "Start the bot" },
-  { command: "help", description: "Show help text" },
+  { command: "tarot", description: "Show tarot card information" },
   { command: "reset", description: "Upload a new file" },
   { command: "lock", description: "Lock the bot for everybody" },
   { command: "unlock", description: "Unlock the bot everybody" },
@@ -65,16 +66,46 @@ bot.command('reset', async (ctx) => {
   await resetSession(ctx);
 });
 
-bot.command('help', async (ctx) => {
-  await ctx.reply(
-    'This bot helps you upload content to Kirby CMS.\n\n' +
-    'Available commands:\n' +
-    '/start - Start the bot\n' +
-    '/reset - Reset your current session\n' +
-    '/help - Show this help message\n' +
-    '/lock - Lock the bot for everybody\n' +
-    '/unlock - Unlock the bot for everybody'
-  );
+// Tarot info commands
+bot.command('tarot', async (ctx) => {
+  const args = ctx.match.trim();
+  
+  if (!args) {
+    // If no specific card is requested, show all tarot info as multiple messages
+    const messages = getAllTarotInfo();
+    
+    // Send each message in sequence
+    for (const message of messages) {
+      await ctx.reply(message, { parse_mode: 'Markdown' });
+    }
+    return;
+  }
+  
+  // Get info for a specific card
+  const cardInfo = getTarotCardInfo(args);
+  
+  if (!cardInfo) {
+    await ctx.reply(`Sorry, I couldn't find information about "${args}". Try using the exact card name or check /tarot for all cards.`);
+    return;
+  }
+  
+  let message = `🔮 *${cardInfo.name}* 🔮\n\n`;
+  
+  // Format based on whether it's a suit or a major arcana card
+  if ('element' in cardInfo) {
+    // It's a suit
+    message += `*Element:* ${cardInfo.element}\n`;
+    message += `*Themes:* ${cardInfo.themes}\n`;
+    message += `*Focus:* ${cardInfo.focus}\n`;
+    message += `*Strengths:* ${cardInfo.strengths}\n`;
+    message += `*Challenges:* ${cardInfo.challenges}`;
+  } else {
+    // It's a major arcana card
+    message += `*Upright:* ${cardInfo.upright}\n`;
+    message += `*Reversed:* ${cardInfo.reverse}`;
+  }
+  
+  await ctx.reply(message, { parse_mode: 'Markdown' });
 });
 
 // Lock and unlock commands
