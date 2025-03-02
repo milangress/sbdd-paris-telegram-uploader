@@ -10,4 +10,6 @@ services:
       - BOT_TOKEN=your_telegram_bot_token
     volumes:
       # Replace with the path to your Kirby content directory
-      - /path/to/kirby/content:/app/kirby/content
+      - /path/to/kirby/content:/usr/src/app/kirby/content
+    # Ensure the container has write permissions to the mounted volume
+    user: "1000:1000"  # This should match the UID:GID of the bun user in the container

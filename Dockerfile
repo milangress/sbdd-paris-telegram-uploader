@@ -33,6 +33,10 @@ COPY --from=prerelease /usr/src/app/src ./src
 RUN mkdir -p /usr/src/app/temp
 RUN mkdir -p /usr/src/app/kirby/content
 
+# Fix permissions - ensure the bun user can write to the content directory
+RUN chown -R bun:bun /usr/src/app/temp /usr/src/app/kirby/content
+RUN chmod -R 755 /usr/src/app/temp /usr/src/app/kirby/content
+
 # Set environment variables
 ENV NODE_ENV=production
 ENV KIRBY_COLLECTION_DIR=/usr/src/app/kirby/content
