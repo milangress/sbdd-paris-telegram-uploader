@@ -41,9 +41,12 @@ const handleMediaUpload = async (
     
     // Move directly to tarot card selection
     await showTarotCardSelection(ctx);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(`Error processing ${fileType}:`, error);
-    await ctx.reply(`Failed to process ${fileType}. Please try again.`);
+    await ctx.reply(`❌ Failed to process ${fileType}. The operation could not be completed due to an error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    
+    // Reset the session to prevent getting stuck in a loop
+    await resetSession(ctx);
   }
 };
 
@@ -111,9 +114,12 @@ export const handleText = async (ctx: MyContext): Promise<void> => {
     
     // Move directly to tarot card selection
     await showTarotCardSelection(ctx);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error processing text:', error);
-    await ctx.reply('Failed to process text. Please try again.');
+    await ctx.reply(`❌ Failed to process text. The operation could not be completed due to an error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    
+    // Reset the session to prevent getting stuck in a loop
+    await resetSession(ctx);
   }
 };
 
@@ -135,9 +141,9 @@ export const finalizeUpload = async (ctx: MyContext): Promise<void> => {
     // Notify the user
     await ctx.reply(`✅ Upload complete! Your ${ctx.session.fileType} has been saved to Kirby CMS.`);
         
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error finalizing upload:', error);
-    await ctx.reply('❌ There was an error saving your upload. Please try again.');
+    await ctx.reply(`❌ There was an error saving your upload: ${error instanceof Error ? error.message : 'Unknown error'}`);
     
   } finally {
     await resetSession(ctx);

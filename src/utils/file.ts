@@ -86,65 +86,70 @@ export const updateSiteTxt = async (
   // Path to site.txt
   const siteTxtPath = path.join(KIRBY_COLLECTION_DIR_ABSOLUTE, 'site.txt');
   
-  // Read the current content using Bun.file
-  const siteFile = Bun.file(siteTxtPath);
-  const content = await siteFile.text();
-  
-  // Create a backup of the original content
-  await createSiteBackup(content, 'before');
-  
-  // Find the Cardscontent field
-  const cardsContentMatch = content.match(/Cardscontent: (.*?)(\n----|\n<CURRENT_CURSOR_POSITION>)/s);
-  
-  if (!cardsContentMatch) {
-    throw new Error('Could not find Cardscontent field in site.txt');
+  try {
+    // Read the current content using Bun.file
+    const siteFile = Bun.file(siteTxtPath);
+    const content = await siteFile.text();
+    
+    // Create a backup of the original content
+    await createSiteBackup(content, 'before');
+    
+    // Find the Cardscontent field
+    const cardsContentMatch = content.match(/Cardscontent: (.*?)(\n----|\n<CURRENT_CURSOR_POSITION>)/s);
+    
+    if (!cardsContentMatch) {
+      throw new Error('Could not find Cardscontent field in site.txt');
+    }
+    
+    // Parse the JSON array
+    const cardsContent = JSON.parse(cardsContentMatch[1]);
+    
+    // Create media content based on file type
+    let mediaContent;
+    if (fileType === 'photo') {
+      mediaContent = `[{"content":{"location":"kirby","image":["file://${uuid}"],"src":"","alt":"","caption":"","link":"","ratio":"","crop":"false"},"id":"${generateUuid()}","isHidden":false,"type":"image"}]`;
+    } else if (fileType === 'video') {
+      mediaContent = `[{"content":{"vidfile":["file://${uuid}"],"vidposter":[],"class":"","controls":"false","mute":"false","autoplay":"false","loop":"false","playsinline":"false","preload":"metadata"},"id":"${generateUuid()}","isHidden":false,"type":"localvideo"}]`;
+    } else if (fileType === 'audio') {
+      mediaContent = `[{"content":{"audiofile":["file://${uuid}"]},"id":"${generateUuid()}","isHidden":false,"type":"audio"}]`;
+    } else if (fileType === 'text') {
+      mediaContent = `[{"content":{"text":"<p>${description}</p>"},"id":"${generateUuid()}","isHidden":false,"type":"text"}]`;
+    }
+    
+    // Create new card object
+    const newCard = {
+      content: {
+        media: mediaContent,
+        tarot_suit: tarotCard.toLowerCase().replace(/\s+/g, ''),
+        description: description,
+        orientation: orientation,
+        house: house,
+        addedby: [],
+        date: new Date().toISOString().split('T')[0]
+      },
+      id: generateUuid(),
+      isHidden: false,
+      type: "tarotCard"
+    };
+    
+    // Add the new card to the array
+    cardsContent.push(newCard);
+    
+    // Replace the Cardscontent field in the file
+    const updatedContent = content.replace(
+      /Cardscontent: (.*?)(\n----|\n<CURRENT_CURSOR_POSITION>)/s,
+      `Cardscontent: ${JSON.stringify(cardsContent)}$2`
+    );
+    
+    // Write the updated content back to the file using Bun.write
+    await Bun.write(siteTxtPath, updatedContent);
+    
+    // Create a backup of the updated content
+    await createSiteBackup(updatedContent, 'after');
+    
+    return updatedContent;
+  } catch (error: unknown) {
+    console.error('Error updating site.txt:', error);
+    throw new Error(`Failed to update site.txt: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-  
-  // Parse the JSON array
-  const cardsContent = JSON.parse(cardsContentMatch[1]);
-  
-  // Create media content based on file type
-  let mediaContent;
-  if (fileType === 'photo') {
-    mediaContent = `[{"content":{"location":"kirby","image":["file://${uuid}"],"src":"","alt":"","caption":"","link":"","ratio":"","crop":"false"},"id":"${generateUuid()}","isHidden":false,"type":"image"}]`;
-  } else if (fileType === 'video') {
-    mediaContent = `[{"content":{"vidfile":["file://${uuid}"],"vidposter":[],"class":"","controls":"false","mute":"false","autoplay":"false","loop":"false","playsinline":"false","preload":"metadata"},"id":"${generateUuid()}","isHidden":false,"type":"localvideo"}]`;
-  } else if (fileType === 'audio') {
-    mediaContent = `[{"content":{"audiofile":["file://${uuid}"]},"id":"${generateUuid()}","isHidden":false,"type":"audio"}]`;
-  } else if (fileType === 'text') {
-    mediaContent = `[{"content":{"text":"<p>${description}</p>"},"id":"${generateUuid()}","isHidden":false,"type":"text"}]`;
-  }
-  
-  // Create new card object
-  const newCard = {
-    content: {
-      media: mediaContent,
-      tarot_suit: tarotCard.toLowerCase().replace(/\s+/g, ''),
-      description: description,
-      orientation: orientation,
-      house: house,
-      addedby: [],
-      date: new Date().toISOString().split('T')[0]
-    },
-    id: generateUuid(),
-    isHidden: false,
-    type: "tarotCard"
-  };
-  
-  // Add the new card to the array
-  cardsContent.push(newCard);
-  
-  // Replace the Cardscontent field in the file
-  const updatedContent = content.replace(
-    /Cardscontent: (.*?)(\n----|\n<CURRENT_CURSOR_POSITION>)/s,
-    `Cardscontent: ${JSON.stringify(cardsContent)}$2`
-  );
-  
-  // Write the updated content back to the file using Bun.write
-  await Bun.write(siteTxtPath, updatedContent);
-  
-  // Create a backup of the updated content
-  await createSiteBackup(updatedContent, 'after');
-  
-  return updatedContent;
 }; 
