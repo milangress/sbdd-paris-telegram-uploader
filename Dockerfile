@@ -46,4 +46,4 @@ ENV KIRBY_COLLECTION_DIR=/usr/src/app/kirby/content
 # EXPOSE 3000/tcp
 
 # Run the application
-CMD ["bun", "run", "start"]
+CMD ["bun", "run", "index.ts"]
