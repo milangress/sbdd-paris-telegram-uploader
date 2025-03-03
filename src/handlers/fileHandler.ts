@@ -24,6 +24,7 @@ const handleMediaUpload = async (
     const fileExtension = fileType === 'photo' ? 'jpg' : fileType === 'video' ? 'mp4' : 'oga';
     
     // Download the file directly to the Kirby content directory with UUID filename
+  
     const file = await ctx.getFile();
     const fileName = `${uuid}.${fileExtension}`;
     const targetPath = path.join(KIRBY_COLLECTION_DIR_ABSOLUTE, fileName);
@@ -41,7 +42,7 @@ const handleMediaUpload = async (
     
     // If bot is locked, just save the file and reset
     if (isBotLocked()) {
-      await ctx.reply(`🐲 File saved successfully in simple upload mode (metadata updates disabled).`);
+      await ctx.reply(`🏛️ Your offering has been placed in the temple archives (use kirby to add the card to the collection)`);
       await resetSession(ctx);
       return;
     }
@@ -51,6 +52,8 @@ const handleMediaUpload = async (
   } catch (error: unknown) {
     console.error(`Error processing ${fileType}:`, error);
     await ctx.reply(`👹 Failed to process ${fileType}. The operation could not be completed due to an error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    await ctx.reply(`The gods are silent on this matter`);
+    await ctx.reply(`UPLOAD FAILED!!`);
     
     // Reset the session to prevent getting stuck in a loop
     await resetSession(ctx);
@@ -112,14 +115,14 @@ export const handleText = async (ctx: MyContext): Promise<void> => {
 
   // If bot is locked, reject text messages since they can't be saved
   if (isBotLocked()) {
-    await ctx.reply('👹 Text messages are not supported in simple upload mode. Only media files (photos, videos, audio) can be uploaded.');
+    await ctx.reply('🏛️ Alas, in this simple mode, I can only accept physical offerings - photos, songs, and moving pictures. Text messages are too... mortal.');
     return;
   }
 
   try {
-
-    await ctx.reply('New upload in text format: ' + text)
-    await ctx.reply('if you didnt mean to create a new card with this text use /reset to start again')
+    await ctx.reply(`Ah, a tale worth preserving in the scrolls of time! 📜 "${text}"`);
+    await ctx.reply(`(Should you wish to start anew, simply whisper /reset to me)`);
+    
     // Generate UUID for text
     const uuid = generateUuid();
     
@@ -160,6 +163,8 @@ export const finalizeUpload = async (ctx: MyContext): Promise<void> => {
   } catch (error: unknown) {
     console.error('👹 Error finalizing upload:', error);
     await ctx.reply(` There was an error saving your upload: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    await ctx.reply(`The gods are silent on this matter`);
+    await ctx.reply(`Use Kirby to save your upload`);
     
   } finally {
     await resetSession(ctx);

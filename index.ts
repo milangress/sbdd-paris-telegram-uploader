@@ -62,9 +62,11 @@ await bot.api.setMyCommands([
 // Command handlers
 bot.command('start', async (ctx) => {
   await ctx.reply('Paris bot, Paris bot who is the most beautiful of us all? 🍎🍎🍎')
-  await ctx.reply('How should I know? My cards are all empty and im not even high')
+  await ctx.reply('How should I know? My cards are all empty and im not even high.')
+  await ctx.reply('sry wrong paris here')
+  await ctx.reply('💅 dramaqueen of troy')
   await ctx.reply(
-    'sry wrong paris here 💅 ugh whatever 😒 just send me a photo, video, audio, or text message to make a new card',
+    'ugh whatever these days I moonlight as a digital fortune teller. 😒 just send me a photo, video, audio, or text message and I will weave them into destiny',
   );
 });
 
@@ -87,12 +89,12 @@ bot.command('tarot', async (ctx) => {
 // Lock and unlock commands
 bot.command('lock', async (ctx) => {
   lockBot();
-  await ctx.reply('🔒 👹 Bot is now in simple upload mode. Files will be saved without metadata collection.');
+  await ctx.reply('🔒 👹 Up the walls! I shall now accept only simple offerings. Files will be saved without the usual divine ceremony.');
 });
 
 bot.command('unlock', async (ctx) => {
   unlockBot();
-  await ctx.reply('🔓 🐲 Bot is now unlocked. Users can upload content again.');
+  await ctx.reply('🔓 🐲 The gates are open once more! Bring forth your offerings with all their sacred details. 💅');
 });
 
 // Middleware to check if bot is locked before processing media or text

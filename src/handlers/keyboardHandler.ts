@@ -15,17 +15,17 @@ export async function showTarotCardSelection(ctx: MyContext): Promise<void> {
   
   // Add category buttons with Major Arcana on its own line
   keyboard
-    .text("Major Arcana")
+    .text("✨ Major Arcana ✨")
     .row()
-    .text("Cups")
-    .text("Wands")
+    .text("🌊 Cups 🌊")
+    .text("🔥 Wands 🔥")
     .row()
-    .text("Swords")
-    .text("Pentacles")
+    .text("⚔️ Swords ⚔️")
+    .text("💎 Pentacles 💎")
     .row();
   
   // Add a message explaining the categories
-  await ctx.reply('Please select a tarot card category:', { reply_markup: keyboard });
+  await ctx.reply('Choose your path:', { reply_markup: keyboard });
 }
 
 /**
@@ -169,6 +169,7 @@ export async function showTarotConfirmation(ctx: MyContext, cardKey: string): Pr
     .resized().oneTime();
   
   let message = `🔮 *${cardInfo.name}* 🔮\n\n`;
+  message += `💅 by divine sight 💅\n\n`;
   
   // Format based on whether it's a suit, a major arcana card, or a minor arcana card
   if (cardInfo.category === 'suit') {
@@ -195,7 +196,7 @@ export async function showTarotConfirmation(ctx: MyContext, cardKey: string): Pr
     }
   }
   
-  message += "Is this the card you want to use?";
+  message += "Shall we weave this card into our destiny? 🏛️";
   
   // Move to confirmation step
   ctx.session.step = 'awaiting_tarot_confirmation';

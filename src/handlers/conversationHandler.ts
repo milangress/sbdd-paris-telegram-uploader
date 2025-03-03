@@ -40,19 +40,19 @@ export const handleTarotCategory = async (ctx: MyContext): Promise<void> => {
   const userInput = ctx.msg.text;
   
   // Handle category selection
-  if (userInput === "Major Arcana") {
+  if (userInput.includes("Major Arcana")) {
     await showMajorArcanaSelection(ctx);
     return;
-  } else if (userInput === "Cups") {
+  } else if (userInput.includes("Cups")) {
     await showSuitCardSelection(ctx, 'cups');
     return;
-  } else if (userInput === "Wands") {
+  } else if (userInput.includes("Wands")) {
     await showSuitCardSelection(ctx, 'wands');
     return;
-  } else if (userInput === "Swords") {
+  } else if (userInput.includes("Swords")) {
     await showSuitCardSelection(ctx, 'swords');
     return;
-  } else if (userInput === "Pentacles") {
+  } else if (userInput.includes("Pentacles")) {
     await showSuitCardSelection(ctx, 'pentacles');
     return;
   } else {
