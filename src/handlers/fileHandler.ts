@@ -7,7 +7,7 @@ import { resetSession } from '../utils/reset';
 import { KIRBY_COLLECTION_DIR_ABSOLUTE } from '../config';
 import { showTarotCardSelection } from './keyboardHandler';
 import { isBotLocked } from '../utils/lockState';
-
+import { logMessage } from '../config';
 /**
  * Shared function to handle media uploads
  */
@@ -28,6 +28,8 @@ const handleMediaUpload = async (
     const file = await ctx.getFile();
     const fileName = `${uuid}.${fileExtension}`;
     const targetPath = path.join(KIRBY_COLLECTION_DIR_ABSOLUTE, fileName);
+
+    await logMessage(`Downloading ${fileType} to ${targetPath} from: ${JSON.stringify(ctx.msg?.from)}`);
     
     // Download to the final location
     await file.download(targetPath);

@@ -7,7 +7,7 @@ import { lockBot, unlockBot, isBotLocked } from './src/utils/lockState';
 import { getAllTarotInfo } from './src/utils/tarotInfo';
 
 // Import configuration
-import { BOT_TOKEN, ALLOWED_USER_IDS } from './src/config';
+import { BOT_TOKEN, ALLOWED_USER_IDS, logMessage } from './src/config';
 import type { MyContext, SessionData } from './src/types';
 
 // Import handlers
@@ -89,11 +89,13 @@ bot.command('tarot', async (ctx) => {
 // Lock and unlock commands
 bot.command('lock', async (ctx) => {
   lockBot();
+  await logMessage(`Bot locked by user ${ctx.from?.id}`);
   await ctx.reply('🔒 👹 Up the walls! I shall now accept only simple offerings. Files will be saved without the usual divine ceremony.');
 });
 
 bot.command('unlock', async (ctx) => {
   unlockBot();
+  await logMessage(`Bot unlocked by user ${ctx.from?.id}`);
   await ctx.reply('🔓 🐲 The gates are open once more! Bring forth your offerings with all their sacred details. 💅');
 });
 
@@ -149,8 +151,8 @@ bot.on('message:text', async (ctx, next) => {
 // Error handling
 bot.catch((err) => {
   const ctx = err.ctx;
-  console.error(`Error while handling update ${ctx.update.update_id}:`);
   const e = err.error;
+  logMessage(`Error while handling update ${ctx.update.update_id}: ${e instanceof Error ? e.message : 'Unknown error'}`);
   if (e instanceof GrammyError) {
     console.error("Error in request:", e.description);
   } else if (e instanceof HttpError) {
@@ -161,5 +163,5 @@ bot.catch((err) => {
 });
 
 // Start the bot
-console.log('Starting Kirby CMS Uploader Bot...');
+logMessage('Starting Kirby CMS Uploader Bot...');
 bot.start();

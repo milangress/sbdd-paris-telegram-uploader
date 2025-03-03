@@ -1,7 +1,26 @@
 import path from 'path';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, appendFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { ALL_TAROT_CARDS, MAJOR_ARCANA_CARDS, CUPS_CARDS, WANDS_CARDS, SWORDS_CARDS, PENTACLES_CARDS } from '../utils/tarotInfo';
+
+// Logging utility
+const LOG_FILE = 'sbdd-paris-telegram-uploader.log';
+
+export const logMessage = async (message: string) => {
+  const timestamp = new Date().toISOString();
+  const logEntry = `[${timestamp}] ${message}\n`;
+  
+  // Log to console
+  console.log(logEntry.trim());
+  
+  try {
+    // Ensure we have the absolute path to the log file
+    const logPath = path.join(KIRBY_COLLECTION_DIR || process.cwd(), LOG_FILE);
+    await appendFile(logPath, logEntry);
+  } catch (error) {
+    console.error('Failed to write to log file:', error);
+  }
+};
 
 // Bot configuration
 export const BOT_TOKEN = Bun.env.BOT_TOKEN;
@@ -22,10 +41,12 @@ const absoluteKirbyDir = path.isAbsolute(KIRBY_COLLECTION_DIR)
 
 // Create the directory if it doesn't exist
 if (!existsSync(absoluteKirbyDir)) {
-  console.log(`Creating Kirby collection directory: ${absoluteKirbyDir}`);
+  await logMessage(`Creating Kirby collection directory: ${absoluteKirbyDir}`);
   try {
-    mkdir(absoluteKirbyDir, { recursive: true });
+    await mkdir(absoluteKirbyDir, { recursive: true });
+    await logMessage('Successfully created Kirby collection directory');
   } catch (error) {
+    await logMessage(`Failed to create KIRBY_COLLECTION_DIR: ${absoluteKirbyDir}. Error: ${error}`);
     throw new Error(`Failed to create KIRBY_COLLECTION_DIR: ${absoluteKirbyDir}. Error: ${error}`);
   }
 }
