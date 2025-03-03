@@ -61,10 +61,10 @@ await bot.api.setMyCommands([
 
 // Command handlers
 bot.command('start', async (ctx) => {
-  await ctx.reply('Paris, Paris who is the most beautiful of us all? 🍎🍎🍎')
+  await ctx.reply('Paris bot, Paris bot who is the most beautiful of us all? 🍎🍎🍎')
   await ctx.reply('How should I know? My cards are all empty and im not even high')
   await ctx.reply(
-    'sry wrong paris myth here 💅 whatever just send me a photo, video, audio, or text message to make a new card',
+    'sry wrong paris here 💅 ugh whatever 😒 just send me a photo, video, audio, or text message to make a new card',
   );
 });
 
