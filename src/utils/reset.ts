@@ -9,5 +9,7 @@ export async function resetSession(ctx: MyContext) {
     ctx.session.tarotCard = undefined;
     ctx.session.house = undefined;
     ctx.session.uuid = undefined;
-    await ctx.reply('You can start a new upload now.');
+    await ctx.reply('You can start a new upload now.', {
+        reply_markup: { remove_keyboard: true },
+      });
 }

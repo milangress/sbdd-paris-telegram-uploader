@@ -66,7 +66,7 @@ bot.command('start', async (ctx) => {
   await ctx.reply('sry wrong paris here')
   await ctx.reply('💅 dramaqueen of troy')
   await ctx.reply(
-    'ugh whatever these days I moonlight as a digital fortune teller. 😒 just send me a photo, video, audio, or text message and I will weave them into destiny',
+    'ugh whatever these days I moonlight as a digital fortune teller. 😒 just send me a photo, video, audio, or text message and I will weave them into destiny (use /reset to cancel an upload)',
   );
 });
 

@@ -121,6 +121,7 @@ export const handleText = async (ctx: MyContext): Promise<void> => {
 
   try {
     await ctx.reply(`Ah, a tale worth preserving in the scrolls of time! 📜 "${text}"`);
+    await ctx.reply(`are you really trying to create a new card with this text on the front?`);
     await ctx.reply(`(Should you wish to start anew, simply whisper /reset to me)`);
     
     // Generate UUID for text
