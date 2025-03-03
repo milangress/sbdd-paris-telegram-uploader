@@ -6,6 +6,7 @@ import { generateUuid, createUuidFile, updateSiteTxt } from '../utils/file';
 import { resetSession } from '../utils/reset';
 import { KIRBY_COLLECTION_DIR_ABSOLUTE } from '../config';
 import { showTarotCardSelection } from './keyboardHandler';
+import { isBotLocked } from '../utils/lockState';
 
 /**
  * Shared function to handle media uploads
@@ -38,8 +39,14 @@ const handleMediaUpload = async (
     ctx.session.fileType = fileType;
     ctx.session.uuid = uuid;
     
+    // If bot is locked, just save the file and reset
+    if (isBotLocked()) {
+      await ctx.reply(`✅ File saved successfully in simple upload mode (metadata updates disabled).`);
+      await resetSession(ctx);
+      return;
+    }
     
-    // Move directly to tarot card selection
+    // Move directly to tarot card selection if not locked
     await showTarotCardSelection(ctx);
   } catch (error: unknown) {
     console.error(`Error processing ${fileType}:`, error);
@@ -100,6 +107,12 @@ export const handleText = async (ctx: MyContext): Promise<void> => {
   const text = ctx.msg?.text;
   if (!text) {
     await ctx.reply('Failed to process text. Please try again.');
+    return;
+  }
+
+  // If bot is locked, reject text messages since they can't be saved
+  if (isBotLocked()) {
+    await ctx.reply('❌ Text messages are not supported in simple upload mode. Only media files (photos, videos, audio) can be uploaded.');
     return;
   }
 

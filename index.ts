@@ -86,7 +86,7 @@ bot.command('tarot', async (ctx) => {
 // Lock and unlock commands
 bot.command('lock', async (ctx) => {
   lockBot();
-  await ctx.reply('🔒 Bot is now locked. No new uploads will be processed until unlocked.');
+  await ctx.reply('🔒 Bot is now in simple upload mode. Files will be saved without metadata collection.');
 });
 
 bot.command('unlock', async (ctx) => {
@@ -102,9 +102,10 @@ bot.use(async (ctx, next) => {
     return;
   }
   
-  // Check if bot is locked
-  if (isBotLocked()) {
-    await ctx.reply('🔒 😞 The bot is currently locked. Please try again later when it\'s unlocked.');
+  // Check if bot is locked and we're in a metadata collection step
+  if (isBotLocked() && ctx.session.step !== 'idle') {
+    await ctx.reply('🔒 Metadata collection is disabled in simple upload mode.');
+    await resetSession(ctx);
     return;
   }
   
