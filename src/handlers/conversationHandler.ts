@@ -148,15 +148,15 @@ export const handleHouse = async (ctx: MyContext): Promise<void> => {
   
   // Show summary
   await ctx.reply(
-    `📝 Summary of your upload:
-    
-Type: ${ctx.session.fileType}
-Description: ${ctx.session.description}
-Orientation: ${ctx.session.orientation}
-Tarot Card: ${tarotCardDisplay}
-House: ${ctx.session.house}
+    `✨ 🏛️ your destiny unfolds:
 
-Finalizing your upload...`
+*Type*: ${ctx.session.fileType} (like the ${ctx.session.fileType === 'photo' ? 'reflection in Helen\'s mirror' : ctx.session.fileType === 'video' ? 'dance of the nymphs' : ctx.session.fileType === 'audio' ? 'songs of the sirens' : 'scrolls of prophecy'}!)
+*Description*: ${ctx.session.description}
+*Orientation*: ${ctx.session.orientation} (as the fates have aligned)
+*Tarot Card*: ${tarotCardDisplay} (your cosmic guide)
+*House*: ${ctx.session.house} (your sanctuary)
+
+The cards whisper... your offering is being woven into the tapestry of paris...`
   );
   
   // Finalize the upload

@@ -169,7 +169,7 @@ export const finalizeUpload = async (ctx: MyContext): Promise<void> => {
     await logMessage(`Successfully finalized upload: ${JSON.stringify(ctx.session)}`);
     
     // Notify the user
-    await ctx.reply(`🐲 Upload complete! Your ${ctx.session.fileType} has been saved to Kirby CMS.`);
+    await ctx.reply(`✨ 🏛️ By the grace of Aphrodite! Your ${ctx.session.fileType} has been enshrined in our archives. May the cards guide your path through destiny's maze... 🔮`);
         
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
