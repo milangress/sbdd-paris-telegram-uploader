@@ -34,16 +34,16 @@ RUN mkdir -p /usr/src/app/temp
 RUN mkdir -p /usr/src/app/kirby/content
 
 # Fix permissions - ensure the bun user can write to the content directory
-RUN chown -R bun:bun /usr/src/app/temp /usr/src/app/kirby/content
-RUN chmod -R 755 /usr/src/app/temp /usr/src/app/kirby/content
+# RUN chown -R bun:bun /usr/src/app/temp /usr/src/app/kirby/content
+# RUN chmod -R 755 /usr/src/app/temp /usr/src/app/kirby/content
 
 # Set environment variables
 ENV NODE_ENV=production
 ENV KIRBY_COLLECTION_DIR=/usr/src/app/kirby/content
 
 # Run as non-root user for better security
-USER bun
-EXPOSE 3000/tcp
+# USER bun
+# EXPOSE 3000/tcp
 
 # Run the application
-CMD ["bun", "run", "index.ts"]
+CMD ["bun", "run", "start"]
