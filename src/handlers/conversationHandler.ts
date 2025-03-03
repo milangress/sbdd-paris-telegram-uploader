@@ -150,13 +150,13 @@ export const handleHouse = async (ctx: MyContext): Promise<void> => {
   await ctx.reply(
     `✨ 🏛️ your destiny unfolds:
 
-*Type*: ${ctx.session.fileType} (like the ${ctx.session.fileType === 'photo' ? 'reflection in Helen\'s mirror' : ctx.session.fileType === 'video' ? 'dance of the nymphs' : ctx.session.fileType === 'audio' ? 'songs of the sirens' : 'scrolls of prophecy'}!)
-*Description*: ${ctx.session.description}
-*Orientation*: ${ctx.session.orientation} (as the fates have aligned)
-*Tarot Card*: ${tarotCardDisplay} (your cosmic guide)
-*House*: ${ctx.session.house} (your sanctuary)
+${ctx.session.fileType} (like the ${ctx.session.fileType === 'photo' ? 'reflection in Helen\'s mirror' : ctx.session.fileType === 'video' ? 'dance of the nymphs' : ctx.session.fileType === 'audio' ? 'songs of the sirens' : 'scrolls of prophecy'}!)
+${ctx.session.description} (as you described)
+${ctx.session.orientation} (as the fates have aligned)
+${tarotCardDisplay} (your cosmic guide)
+${ctx.session.house} (your sanctuary)
 
-The cards whisper... your offering is being woven into the tapestry of paris...`
+your offering is being woven into the tapestry of paris...`
   );
   
   // Finalize the upload
