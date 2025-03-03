@@ -64,7 +64,7 @@ bot.command('start', async (ctx) => {
   await ctx.reply('Paris, Paris who is the most beautiful of us all? 🍎🍎🍎')
   await ctx.reply('How should I know? My cards are all empty ')
   await ctx.reply(
-    'sry wrong paris here — just end me a photo, video, audio, or text message to begin uploading.',
+    'sry wrong paris here ⛓️⛓️⛓️ just end me a photo, video, audio, or text message to malke a new card',
   );
 });
 

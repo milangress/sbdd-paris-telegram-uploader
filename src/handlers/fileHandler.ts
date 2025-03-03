@@ -117,6 +117,9 @@ export const handleText = async (ctx: MyContext): Promise<void> => {
   }
 
   try {
+
+    await ctx.reply('New upload in text format: ' + text)
+    await ctx.reply('if you didnt mean to create a new card with this text use /reset to start again')
     // Generate UUID for text
     const uuid = generateUuid();
     
