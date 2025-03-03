@@ -4,7 +4,7 @@ import { mkdir } from 'node:fs/promises';
 import path from 'path';
 import { resetSession } from './src/utils/reset';
 import { lockBot, unlockBot, isBotLocked } from './src/utils/lockState';
-import { getAllTarotInfo, getTarotCardInfo } from './src/utils/tarotInfo';
+import { getAllTarotInfo } from './src/utils/tarotInfo';
 
 // Import configuration
 import { BOT_TOKEN, ALLOWED_USER_IDS } from './src/config';
@@ -53,17 +53,18 @@ bot.use(session({
 // Register menus
 
 await bot.api.setMyCommands([
-  { command: "start", description: "Start the bot" },
-  { command: "tarot", description: "Show tarot card information" },
   { command: "reset", description: "Upload a new file" },
+  { command: "tarot", description: "Show tarot card information" },
   { command: "lock", description: "Lock the bot for everybody" },
   { command: "unlock", description: "Unlock the bot everybody" },
 ]);
 
 // Command handlers
 bot.command('start', async (ctx) => {
+  await ctx.reply('Paris, Paris who is the most beautiful of us all? 🍎🍎🍎')
+  await ctx.reply('How should I know? My cards are all empty ')
   await ctx.reply(
-    'Welcome to the Kirby CMS Uploader Bot! 👋\n\nThis bot helps you upload content to Kirby CMS. Send me a photo, video, audio, or text message to begin uploading.',
+    'sry wrong paris here — just end me a photo, video, audio, or text message to begin uploading.',
   );
 });
 
@@ -86,12 +87,12 @@ bot.command('tarot', async (ctx) => {
 // Lock and unlock commands
 bot.command('lock', async (ctx) => {
   lockBot();
-  await ctx.reply('🔒 Bot is now in simple upload mode. Files will be saved without metadata collection.');
+  await ctx.reply('🔒 👹 Bot is now in simple upload mode. Files will be saved without metadata collection.');
 });
 
 bot.command('unlock', async (ctx) => {
   unlockBot();
-  await ctx.reply('🔓 Bot is now unlocked. Users can upload content again.');
+  await ctx.reply('🔓 🐲 Bot is now unlocked. Users can upload content again.');
 });
 
 // Middleware to check if bot is locked before processing media or text

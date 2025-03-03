@@ -41,7 +41,7 @@ const handleMediaUpload = async (
     
     // If bot is locked, just save the file and reset
     if (isBotLocked()) {
-      await ctx.reply(`✅ File saved successfully in simple upload mode (metadata updates disabled).`);
+      await ctx.reply(`🐲 File saved successfully in simple upload mode (metadata updates disabled).`);
       await resetSession(ctx);
       return;
     }
@@ -50,7 +50,7 @@ const handleMediaUpload = async (
     await showTarotCardSelection(ctx);
   } catch (error: unknown) {
     console.error(`Error processing ${fileType}:`, error);
-    await ctx.reply(`❌ Failed to process ${fileType}. The operation could not be completed due to an error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    await ctx.reply(`👹 Failed to process ${fileType}. The operation could not be completed due to an error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     
     // Reset the session to prevent getting stuck in a loop
     await resetSession(ctx);
@@ -112,7 +112,7 @@ export const handleText = async (ctx: MyContext): Promise<void> => {
 
   // If bot is locked, reject text messages since they can't be saved
   if (isBotLocked()) {
-    await ctx.reply('❌ Text messages are not supported in simple upload mode. Only media files (photos, videos, audio) can be uploaded.');
+    await ctx.reply('👹 Text messages are not supported in simple upload mode. Only media files (photos, videos, audio) can be uploaded.');
     return;
   }
 
@@ -129,7 +129,7 @@ export const handleText = async (ctx: MyContext): Promise<void> => {
     await showTarotCardSelection(ctx);
   } catch (error: unknown) {
     console.error('Error processing text:', error);
-    await ctx.reply(`❌ Failed to process text. The operation could not be completed due to an error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    await ctx.reply(`👹 Failed to process text. The operation could not be completed due to an error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     
     // Reset the session to prevent getting stuck in a loop
     await resetSession(ctx);
@@ -152,11 +152,11 @@ export const finalizeUpload = async (ctx: MyContext): Promise<void> => {
     );
     
     // Notify the user
-    await ctx.reply(`✅ Upload complete! Your ${ctx.session.fileType} has been saved to Kirby CMS.`);
+    await ctx.reply(`🐲 Upload complete! Your ${ctx.session.fileType} has been saved to Kirby CMS.`);
         
   } catch (error: unknown) {
-    console.error('Error finalizing upload:', error);
-    await ctx.reply(`❌ There was an error saving your upload: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error('👹 Error finalizing upload:', error);
+    await ctx.reply(` There was an error saving your upload: ${error instanceof Error ? error.message : 'Unknown error'}`);
     
   } finally {
     await resetSession(ctx);
