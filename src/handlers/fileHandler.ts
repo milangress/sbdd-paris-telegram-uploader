@@ -24,15 +24,15 @@ const handleMediaUpload = async (
     const fileExtension = fileType === 'photo' ? 'jpg' : fileType === 'video' ? 'mp4' : 'oga';
     
     // Download the file directly to the Kirby content directory with UUID filename
-  
     const file = await ctx.getFile();
     const fileName = `${uuid}.${fileExtension}`;
     const targetPath = path.join(KIRBY_COLLECTION_DIR_ABSOLUTE, fileName);
 
-    await logMessage(`Downloading ${fileType} to ${targetPath} from: ${JSON.stringify(ctx.msg?.from)}`);
+    await logMessage(`Downloading ${fileType} to ${targetPath} from user ${ctx.from?.id} (${ctx.from?.username || 'unknown'})`);
     
     // Download to the final location
     await file.download(targetPath);
+    await logMessage(`Successfully downloaded ${fileType} file: ${fileName}`);
     
     // Create the UUID text file
     await createUuidFile(targetPath, uuid);
@@ -44,6 +44,7 @@ const handleMediaUpload = async (
     
     // If bot is locked, just save the file and reset
     if (isBotLocked()) {
+      await logMessage(`Simple file upload completed for ${fileName} (bot locked)`);
       await ctx.reply(`🏛️ Your offering has been placed in the temple archives (use kirby to add the card to the collection)`);
       await resetSession(ctx);
       return;
@@ -52,8 +53,10 @@ const handleMediaUpload = async (
     // Move directly to tarot card selection if not locked
     await showTarotCardSelection(ctx);
   } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    await logMessage(`Error processing ${fileType}: ${errorMessage}`);
     console.error(`Error processing ${fileType}:`, error);
-    await ctx.reply(`👹 Failed to process ${fileType}. The operation could not be completed due to an error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    await ctx.reply(`👹 Failed to process ${fileType}. The operation could not be completed due to an error: ${errorMessage}`);
     await ctx.reply(`The gods are silent on this matter`);
     await ctx.reply(`UPLOAD FAILED!!`);
     
@@ -150,9 +153,12 @@ export const handleText = async (ctx: MyContext): Promise<void> => {
  */
 export const finalizeUpload = async (ctx: MyContext): Promise<void> => {
   try {
+    const uuid = ctx.session.uuid || generateUuid();
+    await logMessage(`Finalizing upload for UUID: ${uuid}, type: ${ctx.session.fileType}, tarot: ${ctx.session.tarotCard}`);
+    
     // Update the site.txt file with the new card data
     await updateSiteTxt(
-      ctx.session.uuid || generateUuid(),
+      uuid,
       ctx.session.fileType || 'unknown',
       ctx.session.description || '',
       ctx.session.orientation || '',
@@ -160,12 +166,16 @@ export const finalizeUpload = async (ctx: MyContext): Promise<void> => {
       ctx.session.house || ''
     );
     
+    await logMessage(`Successfully finalized upload: ${JSON.stringify(ctx.session)}`);
+    
     // Notify the user
     await ctx.reply(`🐲 Upload complete! Your ${ctx.session.fileType} has been saved to Kirby CMS.`);
         
   } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    await logMessage(`Error finalizing upload: ${errorMessage}`);
     console.error('👹 Error finalizing upload:', error);
-    await ctx.reply(` There was an error saving your upload: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    await ctx.reply(` There was an error saving your upload: ${errorMessage}`);
     await ctx.reply(`The gods are silent on this matter`);
     await ctx.reply(`Use Kirby to save your upload`);
     

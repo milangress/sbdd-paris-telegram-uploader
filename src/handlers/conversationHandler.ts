@@ -3,6 +3,7 @@ import { Keyboard } from 'grammy';
 import { ORIENTATIONS, TAROT_CARDS, HOUSES } from '../config';
 import { finalizeUpload } from './fileHandler';
 import { getTarotCardInfo, ALL_TAROT_CARDS } from '../utils/tarotInfo';
+import { logMessage } from '../config';
 import { 
   showTarotCardSelection, 
   showMajorArcanaSelection, 
@@ -95,6 +96,7 @@ export const handleTarotCard = async (ctx: MyContext): Promise<void> => {
     await showTarotConfirmation(ctx, cardByDisplay.key);
     return;
   } else {
+    await logMessage(`Invalid tarot card selection attempt: "${userInput}"`);
     // If it's not a valid card, ask again
     await ctx.reply(`"${userInput}" is not a recognized tarot card. Please select a valid tarot card or go back to categories.`);
     return;
@@ -141,6 +143,8 @@ export const handleHouse = async (ctx: MyContext): Promise<void> => {
   if (cardInfo) {
     tarotCardDisplay = cardInfo.display;
   }
+
+  await logMessage(`Upload metadata complete - House: ${house}, Card: ${tarotCardDisplay}, Type: ${ctx.session.fileType} Session: ${JSON.stringify(ctx.session)}`);
   
   // Show summary
   await ctx.reply(
