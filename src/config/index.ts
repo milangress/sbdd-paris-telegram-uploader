@@ -1,7 +1,7 @@
 import path from 'path';
 import { mkdir, appendFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { ALL_TAROT_CARDS, MAJOR_ARCANA_CARDS, CUPS_CARDS, WANDS_CARDS, SWORDS_CARDS, PENTACLES_CARDS } from '../utils/tarotInfo';
+import { ALL_TAROT_CARDS, MAJOR_ARCANA_CARDS } from '../utils/tarotInfo';
 
 // Logging utility
 const LOG_FILE = 'sbdd-paris-telegram-uploader.log';
@@ -69,8 +69,7 @@ export const TAROT_CATEGORIES = [
 ];
 
 // Use the card objects directly from our tarotInfo module
-export const TAROT_CARDS = Object.values(ALL_TAROT_CARDS)
-  .filter(card => card.category !== 'suit'); // Exclude the suit info cards
+export const TAROT_CARDS = Object.values(ALL_TAROT_CARDS);
 
 // Orientation options
 export const ORIENTATIONS = ['landscape', 'portrait'];

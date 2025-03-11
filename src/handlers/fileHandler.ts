@@ -5,7 +5,7 @@ import type { MyContext } from '../types';
 import { generateUuid, createUuidFile, updateSiteTxt } from '../utils/file';
 import { resetSession } from '../utils/reset';
 import { KIRBY_COLLECTION_DIR_ABSOLUTE } from '../config';
-import { showTarotCardSelection } from './keyboardHandler';
+import { showSimplifiedTarotSelection } from './keyboardHandler';
 import { isBotLocked } from '../utils/lockState';
 import { logMessage } from '../config';
 /**
@@ -51,7 +51,7 @@ const handleMediaUpload = async (
     }
     
     // Move directly to tarot card selection if not locked
-    await showTarotCardSelection(ctx);
+    await showSimplifiedTarotSelection(ctx);
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     await logMessage(`Error processing ${fileType}: ${errorMessage}`);
@@ -138,7 +138,7 @@ export const handleText = async (ctx: MyContext): Promise<void> => {
     ctx.session.uuid = uuid;
     
     // Move directly to tarot card selection
-    await showTarotCardSelection(ctx);
+    await showSimplifiedTarotSelection(ctx);
   } catch (error: unknown) {
     console.error('Error processing text:', error);
     await ctx.reply(`👹 Failed to process text. The operation could not be completed due to an error: ${error instanceof Error ? error.message : 'Unknown error'}`);

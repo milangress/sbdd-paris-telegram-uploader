@@ -15,4 +15,4 @@ fi
 
 echo "Build completed!"
 echo "To run the container, use:"
-echo "docker run -d --name sbdd-paris-telegram-uploader -e BOT_TOKEN=your_telegram_bot_token -v /path/to/kirby/content:/usr/src/app/kirby/content milangress/sbdd-paris-telegram-uploader:latest" 
+echo "docker run -d --name sbdd-paris-telegram-uploader -e BOT_TOKEN=7654652740:AAERTasYj4ROeol8CHOylkgkteoqraHVEDE -v /path/to/kirby/content:/usr/src/app/kirby/content milangress/sbdd-paris-telegram-uploader:latest" 

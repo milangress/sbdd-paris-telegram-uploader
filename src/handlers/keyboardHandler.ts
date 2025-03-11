@@ -1,152 +1,9 @@
 import { Keyboard } from 'grammy';
 import type { MyContext } from '../types';
-import { MAJOR_ARCANA_CARDS, CUPS_CARDS, WANDS_CARDS, SWORDS_CARDS, PENTACLES_CARDS, type TarotCardInfo } from '../utils/tarotInfo';
+import { MAJOR_ARCANA_CARDS, SUIT_CARDS, type TarotCardInfo } from '../utils/tarotInfo';
 
 /**
- * Show tarot card category selection
- * @param ctx Telegram context
- */
-export async function showTarotCardSelection(ctx: MyContext): Promise<void> {
-  // Set step to awaiting tarot category
-  ctx.session.step = 'awaiting_tarot_category';
-
-  // Create keyboard with category buttons
-  const keyboard = new Keyboard();
-  
-  // Add category buttons with Major Arcana on its own line
-  keyboard
-    .text("✨ Major Arcana ✨")
-    .row()
-    .text("🌊 Cups 🌊")
-    .text("🔥 Wands 🔥")
-    .row()
-    .text("⚔️ Swords ⚔️")
-    .text("💎 Pentacles 💎")
-    .row();
-  
-  // Add a message explaining the categories
-  await ctx.reply('Choose your path:', { reply_markup: keyboard });
-}
-
-/**
- * Show Major Arcana card selection
- * @param ctx Telegram context
- */
-export async function showMajorArcanaSelection(ctx: MyContext): Promise<void> {
-  // Set step to awaiting tarot card
-  ctx.session.step = 'awaiting_tarot_card';
-
-  // Create keyboard for Major Arcana cards
-  const keyboard = new Keyboard();
-
-  // Add Major Arcana cards in rows of 2
-  for (let i = 0; i < MAJOR_ARCANA_CARDS.length; i++) {
-    keyboard.text(MAJOR_ARCANA_CARDS[i].display);
-    // Add a row break after every 2 cards
-    if ((i + 1) % 2 === 0 && i < MAJOR_ARCANA_CARDS.length - 1) {
-      keyboard.row();
-    }
-  }
-  
-  // Add back button
-  keyboard.row().text("← Back to Categories");
-  
-  keyboard.resized().oneTime();
-
-  await ctx.reply('Select a Major Arcana card:', { reply_markup: keyboard });
-}
-
-/**
- * Show suit card selection
- * @param ctx Telegram context
- * @param suit The suit to show cards for (cups, wands, swords, pentacles)
- */
-export async function showSuitCardSelection(ctx: MyContext, suit: 'cups' | 'wands' | 'swords' | 'pentacles'): Promise<void> {
-  // Set step to awaiting tarot card
-  ctx.session.step = 'awaiting_tarot_card';
-
-  // Get the appropriate cards array based on the suit
-  let cards: TarotCardInfo[] = [];
-  switch (suit) {
-    case 'cups':
-      cards = CUPS_CARDS;
-      break;
-    case 'wands':
-      cards = WANDS_CARDS;
-      break;
-    case 'swords':
-      cards = SWORDS_CARDS;
-      break;
-    case 'pentacles':
-      cards = PENTACLES_CARDS;
-      break;
-  }
-
-  // Create keyboard for the selected suit
-  const keyboard = new Keyboard();
-
-  // Add suit cards in rows of 2
-  for (let i = 0; i < cards.length; i++) {
-    keyboard.text(cards[i].display);
-    // Add a row break after every 2 cards
-    if ((i + 1) % 2 === 0 && i < cards.length - 1) {
-      keyboard.row();
-    }
-  }
-  
-  // Add back button
-  keyboard.row().text("← Back to Categories");
-  
-  keyboard.resized().oneTime();
-
-  // Format the suit name for display (capitalize first letter)
-  const formattedSuit = suit.charAt(0).toUpperCase() + suit.slice(1);
-  
-  await ctx.reply(`Select a ${formattedSuit} card:`, { reply_markup: keyboard });
-}
-
-/**
- * Create orientation selection keyboard
- * @param ctx Telegram context
- * @param orientations Array of orientation options
- */
-export async function showOrientationSelection(ctx: MyContext, orientations: string[]): Promise<void> {
-  // Set step to awaiting orientation
-  ctx.session.step = 'awaiting_orientation';
-  
-  // Create orientation keyboard
-  const keyboard = new Keyboard();
-  orientations.forEach(orientation => {
-    keyboard.text(orientation).row();
-  });
-  keyboard.resized().oneTime();
-  
-  // Ask for orientation
-  await ctx.reply('Please select the orientation:', { reply_markup: keyboard });
-}
-
-/**
- * Create house selection keyboard
- * @param ctx Telegram context
- * @param houses Array of house options
- */
-export async function showHouseSelection(ctx: MyContext, houses: string[]): Promise<void> {
-  // Set step to awaiting house
-  ctx.session.step = 'awaiting_house';
-  
-  // Create house keyboard
-  const keyboard = new Keyboard();
-  houses.forEach(house => {
-    keyboard.text(house).row();
-  });
-  keyboard.resized().oneTime();
-  
-  // Ask for house
-  await ctx.reply('Please select a house:', { reply_markup: keyboard });
-}
-
-/**
- * Create tarot card confirmation keyboard
+ * Show tarot confirmation with card details
  * @param ctx Telegram context
  * @param cardKey The key of the selected tarot card
  */
@@ -187,23 +44,107 @@ export async function showTarotConfirmation(ctx: MyContext, cardKey: string): Pr
     if (cardInfo.category !== 'major') {
       const suitInfo = getSuitInfoForCard(cardInfo.key);
       if (suitInfo) {
-        message += `*Suit:* ${suitInfo.name}\n`;
         message += `*Suit Themes:* ${suitInfo.themes}\n`;
         message += `*Suit Focus:* ${suitInfo.focus}\n`;
-        message += `*Suit Strengths:* ${suitInfo.strengths}\n`;
-        message += `*Suit Challenges:* ${suitInfo.challenges}\n\n`;
       }
     }
   }
   
-  message += "Shall we weave this card into our destiny? 🏛️";
+  message += 'Is this the card you wish to use?';
   
-  // Move to confirmation step
+  // Set step to awaiting confirmation
   ctx.session.step = 'awaiting_tarot_confirmation';
   
-  // Show card info and ask for confirmation
+  // Send confirmation message with keyboard
   await ctx.reply(message, { 
-    parse_mode: 'Markdown',
-    reply_markup: keyboard
+    reply_markup: keyboard,
+    parse_mode: 'Markdown'
   });
+}
+
+/**
+ * Show simplified tarot selection with just major arcana cards and the four suits
+ * @param ctx Telegram context
+ */
+export async function showSimplifiedTarotSelection(ctx: MyContext): Promise<void> {
+  // Set step to awaiting tarot card
+  ctx.session.step = 'awaiting_tarot_card';
+
+  // Create keyboard with major arcana cards and the four suits
+  const keyboard = new Keyboard();
+  
+  // Add Major Arcana cards
+  for (let i = 0; i < MAJOR_ARCANA_CARDS.length; i++) {
+    keyboard.text(MAJOR_ARCANA_CARDS[i].display);
+    // Add a row break after every 2 cards
+    if ((i + 1) % 2 === 0 && i < MAJOR_ARCANA_CARDS.length - 1) {
+      keyboard.row();
+    }
+  }
+  
+  // Add a row break before adding the suits
+  keyboard.row();
+  
+  // Add the four suits
+  keyboard
+    .text("Cups")
+    .text("Wands")
+    .row()
+    .text("Swords")
+    .text("Pentacles");
+  
+  keyboard.resized().oneTime();
+  
+  // Add a message explaining the options
+  await ctx.reply('Select a tarot card or suit:', { reply_markup: keyboard });
+}
+
+/**
+ * Show orientation selection
+ * @param ctx Telegram context
+ * @param orientations Array of orientation options
+ */
+export async function showOrientationSelection(ctx: MyContext, orientations: string[]): Promise<void> {
+  // Set step to awaiting orientation
+  ctx.session.step = 'awaiting_orientation';
+  
+  // Create keyboard with orientation buttons
+  const keyboard = new Keyboard();
+  
+  // Add orientation buttons
+  for (const orientation of orientations) {
+    keyboard.text(orientation);
+  }
+  
+  keyboard.resized().oneTime();
+  
+  // Add a message explaining the options
+  await ctx.reply('Choose an orientation:', { reply_markup: keyboard });
+}
+
+/**
+ * Show house selection
+ * @param ctx Telegram context
+ * @param houses Array of house options
+ */
+export async function showHouseSelection(ctx: MyContext, houses: string[]): Promise<void> {
+  // Set step to awaiting house
+  ctx.session.step = 'awaiting_house';
+  
+  // Create keyboard with house buttons
+  const keyboard = new Keyboard();
+  
+  // Add house buttons in rows of 2
+  for (let i = 0; i < houses.length; i++) {
+    keyboard.text(houses[i]);
+    // Add a row break after every 2 houses
+    if ((i + 1) % 2 === 0 && i < houses.length - 1) {
+      keyboard.row();
+    }
+  }
+  
+  keyboard.resized().oneTime();
+  
+  // Add a message explaining the options
+  await ctx.reply('Choose a house:', { reply_markup: keyboard });
 } 

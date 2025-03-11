@@ -1,16 +1,13 @@
 import type { MyContext } from '../types';
 import { Keyboard } from 'grammy';
-import { ORIENTATIONS, TAROT_CARDS, HOUSES } from '../config';
+import { ORIENTATIONS, TAROT_CARDS, HOUSES, logMessage } from '../config';
 import { finalizeUpload } from './fileHandler';
 import { getTarotCardInfo, ALL_TAROT_CARDS } from '../utils/tarotInfo';
-import { logMessage } from '../config';
 import { 
-  showTarotCardSelection, 
-  showMajorArcanaSelection, 
-  showSuitCardSelection,
+  showTarotConfirmation,
   showOrientationSelection,
   showHouseSelection,
-  showTarotConfirmation
+  showSimplifiedTarotSelection
 } from './keyboardHandler';
 
 /**
@@ -32,38 +29,16 @@ export const handleOrientation = async (ctx: MyContext): Promise<void> => {
 
 /**
  * Handles the tarot category selection step of the conversation
+ * This is now a simple pass-through to the card selection since we've simplified the flow
  */
 export const handleTarotCategory = async (ctx: MyContext): Promise<void> => {
   if (ctx.session.step !== 'awaiting_tarot_category' || !ctx.msg?.text) {
     return;
   }
 
-  const userInput = ctx.msg.text;
-  
-  // Handle category selection
-  if (userInput.includes("Major Arcana")) {
-    await showMajorArcanaSelection(ctx);
-    return;
-  } else if (userInput.includes("Cups")) {
-    await showSuitCardSelection(ctx, 'cups');
-    return;
-  } else if (userInput.includes("Wands")) {
-    await showSuitCardSelection(ctx, 'wands');
-    return;
-  } else if (userInput.includes("Swords")) {
-    await showSuitCardSelection(ctx, 'swords');
-    return;
-  } else if (userInput.includes("Pentacles")) {
-    await showSuitCardSelection(ctx, 'pentacles');
-    return;
-  } else {
-    // If it's not a valid category, ask again
-    await ctx.reply(`"${userInput}" is not a recognized tarot category. Please select a valid category.`);
-    
-    // Show the category selection again
-    await showTarotCardSelection(ctx);
-    return;
-  }
+  // Simply show all cards directly
+  ctx.session.step = 'awaiting_tarot_card';
+  await showSimplifiedTarotSelection(ctx);
 };
 
 /**
@@ -76,16 +51,19 @@ export const handleTarotCard = async (ctx: MyContext): Promise<void> => {
 
   const userInput = ctx.msg.text;
   
-  // Handle back button
-  if (userInput === "← Back to Categories") {
-    // Go back to category selection
-    await showTarotCardSelection(ctx);
+  // Check if it's one of the four suits
+  if (userInput === "Cups" || userInput === "Wands" || userInput === "Swords" || userInput === "Pentacles") {
+    // It's a suit, save the key (lowercase)
+    ctx.session.tarotCard = userInput.toLowerCase();
+    
+    // Show confirmation with suit details
+    await showTarotConfirmation(ctx, userInput.toLowerCase());
     return;
   }
-
-  // Try to find the card by display name
+  
+  // Try to find the card by display name (for Major Arcana)
   const cardByDisplay = TAROT_CARDS.find(card => 
-    card.display.toLowerCase() === userInput.toLowerCase().trim()
+    card.display.toLowerCase() === userInput.toLowerCase().trim() && card.category === 'major'
   );
   
   if (cardByDisplay) {
@@ -98,7 +76,9 @@ export const handleTarotCard = async (ctx: MyContext): Promise<void> => {
   } else {
     await logMessage(`Invalid tarot card selection attempt: "${userInput}"`);
     // If it's not a valid card, ask again
-    await ctx.reply(`"${userInput}" is not a recognized tarot card. Please select a valid tarot card or go back to categories.`);
+    await ctx.reply(`"${userInput}" is not a recognized tarot card or suit. Please select a valid option.`);
+    // Show the card selection again
+    await showSimplifiedTarotSelection(ctx);
     return;
   }
 };
@@ -117,8 +97,8 @@ export const handleTarotConfirmation = async (ctx: MyContext): Promise<void> => 
     // User confirmed the card, move to orientation selection
     await showOrientationSelection(ctx, ORIENTATIONS);
   } else {
-    // User wants to choose another card, go back to category selection
-    await showTarotCardSelection(ctx);
+    // User wants to choose another card, go back to card selection
+    await showSimplifiedTarotSelection(ctx);
   }
 };
 
@@ -135,28 +115,24 @@ export const handleHouse = async (ctx: MyContext): Promise<void> => {
   // Set the house
   ctx.session.house = house;
   
-  // Get the display name for the tarot card
-  let tarotCardDisplay = ctx.session.tarotCard || 'Unknown';
+  // Get the tarot card display name
+  const tarotCardInfo = getTarotCardInfo(ctx.session.tarotCard || '');
+  const tarotCardDisplay = tarotCardInfo ? tarotCardInfo.display : 'Unknown Card';
   
-  // Get card info from our unified structure
-  const cardInfo = getTarotCardInfo(ctx.session.tarotCard || '');
-  if (cardInfo) {
-    tarotCardDisplay = cardInfo.display;
-  }
-
+  // Log the complete metadata
   await logMessage(`Upload metadata complete - House: ${house}, Card: ${tarotCardDisplay}, Type: ${ctx.session.fileType} Session: ${JSON.stringify(ctx.session)}`);
   
-  // Show summary
+  // Show summary of selected values
   await ctx.reply(
-    `✨ 🏛️ your destiny unfolds:
+    `✨ 🏛️ Your destiny unfolds:
 
 ${ctx.session.fileType} (like the ${ctx.session.fileType === 'photo' ? 'reflection in Helen\'s mirror' : ctx.session.fileType === 'video' ? 'dance of the nymphs' : ctx.session.fileType === 'audio' ? 'songs of the sirens' : 'scrolls of prophecy'}!)
-${ctx.session.description} (as you described)
+${ctx.session.description ? `"${ctx.session.description}" (as you described)` : ''}
 ${ctx.session.orientation} (as the fates have aligned)
 ${tarotCardDisplay} (your cosmic guide)
-${ctx.session.house} (your sanctuary)
+${house} (your sanctuary)
 
-your offering is being woven into the tapestry of paris...`
+Your offering is being woven into the tapestry of paris...`
   );
   
   // Finalize the upload
