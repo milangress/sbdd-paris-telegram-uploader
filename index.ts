@@ -19,7 +19,6 @@ import {
   handleHouse,
   handleTarotCategory 
 } from './src/handlers/conversationHandler';
-import { showSimplifiedTarotSelection } from './src/handlers/keyboardHandler';
 
 // Create a bot instance with the combined MyContext type
 const bot = new Bot<MyContext>(BOT_TOKEN as string);
@@ -69,9 +68,7 @@ bot.command('start', async (ctx) => {
   await ctx.reply(
     'ugh whatever these days I moonlight as a digital fortune teller. 😒 just send me a photo, video, audio, or text message and I will weave them into destiny (use /reset to cancel an upload)',
   );
-  await ctx.reply(
-    'You can select from the major arcana cards or one of the four suits (Cups, Wands, Swords, Pentacles).',
-  );
+  
 });
 
 bot.command('reset', async (ctx) => {

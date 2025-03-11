@@ -25,8 +25,7 @@ export async function showTarotConfirmation(ctx: MyContext, cardKey: string): Pr
     .text("No, choose another")
     .resized().oneTime();
   
-  let message = `🔮 *${cardInfo.name}* 🔮\n`;
-  message += `💅 **by divine sight** 💅\n\n`;
+  let message = `💅 *${cardInfo.name}* 💅\n`;
   
   // Format based on whether it's a suit, a major arcana card, or a minor arcana card
   if (cardInfo.category === 'suit') {

@@ -120,7 +120,7 @@ export const handleText = async (ctx: MyContext): Promise<void> => {
 
   // If bot is locked, reject text messages since they can't be saved
   if (isBotLocked()) {
-    await ctx.reply('🏛️ Alas, in this simple mode, I can only accept physical offerings - photos, songs, and moving pictures. Text messages are too... mortal.');
+    await ctx.reply('🏛️ Alas, in this simple mode, I can only accept physical offerings - photos, songs, and moving pictures.');
     return;
   }
 
@@ -168,8 +168,7 @@ export const finalizeUpload = async (ctx: MyContext): Promise<void> => {
     
     await logMessage(`Successfully finalized upload: ${JSON.stringify(ctx.session)}`);
     
-    // Notify the user
-    await ctx.reply(`✨ 🏛️ By the grace of Aphrodite! Your ${ctx.session.fileType} has been enshrined in the sacred archives of Troy. May the cards guide your path through destiny's maze... 🔮`);
+
     await ctx.reply(`🐲 🏛️ Your ${ctx.session.fileType} has been enshrined in our archives. May the cards guide your path through this unstable maze... 🔮`);
         
   } catch (error: unknown) {
