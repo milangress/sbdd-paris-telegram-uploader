@@ -120,7 +120,7 @@ export const updateSiteTxt = async (
     const newCard = {
       content: {
         media: mediaContent,
-        tarot_suit: tarotCard.toLowerCase().replace(/\s+/g, ''),
+        tarot_suit: tarotCard,
         description: description,
         orientation: orientation,
         house: house,
