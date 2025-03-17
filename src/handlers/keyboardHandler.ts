@@ -72,25 +72,19 @@ export async function showSimplifiedTarotSelection(ctx: MyContext): Promise<void
   // Create keyboard with major arcana cards and the four suits
   const keyboard = new Keyboard();
   
-  // Add Major Arcana cards
+  // Add Major Arcana cards with descriptions
   for (let i = 0; i < MAJOR_ARCANA_CARDS.length; i++) {
-    keyboard.text(MAJOR_ARCANA_CARDS[i].display);
-    // Add a row break after every 2 cards
-    if ((i + 1) % 2 === 0 && i < MAJOR_ARCANA_CARDS.length - 1) {
-      keyboard.row();
-    }
+    const card = MAJOR_ARCANA_CARDS[i];
+    keyboard.text(`${card.display} - ↑ ${card.upright} ↓ ${card.reverse}`);
+    // Each card gets its own row due to the length
+    keyboard.row();
   }
   
-  // Add a row break before adding the suits
-  keyboard.row();
-  
-  // Add the four suits
-  keyboard
-    .text("Cups")
-    .text("Wands")
-    .row()
-    .text("Swords")
-    .text("Pentacles");
+  // Add the four suits with descriptions
+  for (const suit of SUIT_CARDS) {
+    keyboard.text(`${suit.display} - 🎭 ${suit.themes} |${suit.focus}`);
+    keyboard.row();
+  }
   
   keyboard.resized().oneTime();
   
