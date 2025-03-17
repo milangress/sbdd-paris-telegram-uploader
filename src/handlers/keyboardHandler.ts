@@ -82,7 +82,7 @@ export async function showSimplifiedTarotSelection(ctx: MyContext): Promise<void
   
   // Add the four suits with descriptions
   for (const suit of SUIT_CARDS) {
-    keyboard.text(`${suit.display} - 🎭 ${suit.themes} |${suit.focus}`);
+    keyboard.text(`${suit.display} - 🎭 ${suit.themes} | ${suit.focus}`);
     keyboard.row();
   }
   

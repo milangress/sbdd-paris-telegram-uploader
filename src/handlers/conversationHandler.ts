@@ -49,7 +49,12 @@ export const handleTarotCard = async (ctx: MyContext): Promise<void> => {
     return;
   }
 
-  const userInput = ctx.msg.text;
+  // Extract just the card name by splitting at " - " and taking the first part
+  const fullUserInput = ctx.msg.text;
+  // If the text contains " - ", extract just the card name before it
+  const userInput = fullUserInput.includes(" - ") ? 
+    fullUserInput.split(" - ")[0].trim() : 
+    fullUserInput.trim();
   
   // Check if it's one of the four suits
   if (userInput === "Cups" || userInput === "Wands" || userInput === "Swords" || userInput === "Pentacles") {
@@ -74,7 +79,7 @@ export const handleTarotCard = async (ctx: MyContext): Promise<void> => {
     await showTarotConfirmation(ctx, cardByDisplay.key);
     return;
   } else {
-    await logMessage(`Invalid tarot card selection attempt: "${userInput}"`);
+    await logMessage(`Invalid tarot card selection attempt: "${userInput}" (from full input: "${fullUserInput}")`);
     // If it's not a valid card, ask again
     await ctx.reply(`"${userInput}" is not a recognized tarot card or suit. Please select a valid option.`);
     // Show the card selection again
